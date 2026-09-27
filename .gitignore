@@ -1,0 +1,36 @@
+# Local data: SQLite library, WAL files, MCP exports
+data/
+out/
+*.db
+*.db-wal
+*.db-shm
+
+# Python
+.venv/
+__pycache__/
+*.py[cod]
+*.egg-info/
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+.coverage
+htmlcov/
+
+# Bun / TypeScript
+node_modules/
+dist/
+*.tsbuildinfo
+
+# Local config and secrets
+.env
+.env.*
+packages/engine/config/engine.toml
+
+# Logs
+*.log
+
+# Editors and OS
+.DS_Store
+.idea/
+.vscode/
+*.swp

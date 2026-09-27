@@ -1,0 +1,9 @@
+{
+  "type": "design",
+  "instruct": "An adult male narrator in his mid-thirties with a warm, low-mid voice. Neutral international English, clear diction, calm and curious, like a science explainer who enjoys the topic.",
+  "text": "Give it a second. Ordinary things get interesting when they refuse to behave the way we expect.",
+  "language": "English",
+  "candidates": 4,
+  "seed_start": 1000,
+  "params": { "temperature": 0.9 }
+}

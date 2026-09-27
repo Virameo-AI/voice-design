@@ -1,0 +1,52 @@
+[project]
+name = "voice-engine"
+version = "0.1.0"
+description = "Voice design and speech engine"
+requires-python = ">=3.12,<3.13"
+dependencies = [
+    "fastapi>=0.115",
+    "uvicorn>=0.30",
+    "pydantic>=2.7",
+    "httpx>=0.27",
+    "numpy>=1.26",
+    "soundfile>=0.12",
+]
+
+[project.optional-dependencies]
+mac = ["mlx-audio>=0.5.6; sys_platform == 'darwin'"]
+cuda = ["qwen-tts>=0.1.0", "torch>=2.4.0"]
+# Same models on the CPU. torch comes from the CPU-only wheel index, so no CUDA libraries are downloaded.
+cpu = ["qwen-tts>=0.1.0", "torch>=2.4.0", "torchaudio>=2.4.0"]
+dev = ["pytest>=8"]
+
+[tool.uv]
+conflicts = [
+    [{ extra = "mac" }, { extra = "cuda" }],
+    [{ extra = "mac" }, { extra = "cpu" }],
+    [{ extra = "cuda" }, { extra = "cpu" }],
+]
+
+[tool.uv.sources]
+torch = [{ index = "pytorch-cpu", extra = "cpu" }]
+torchaudio = [{ index = "pytorch-cpu", extra = "cpu" }]
+
+[[tool.uv.index]]
+name = "pytorch-cpu"
+url = "https://download.pytorch.org/whl/cpu"
+explicit = true
+
+[project.scripts]
+voice-engine = "voice_engine.cli:main"
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/voice_engine"]
+
+[tool.hatch.build.targets.wheel.force-include]
+"src/voice_engine/catalog_samples" = "voice_engine/catalog_samples"
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]

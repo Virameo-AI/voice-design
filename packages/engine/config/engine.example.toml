@@ -1,0 +1,15 @@
+# Copy to engine.toml and pass with: voice-engine serve --config config/engine.toml
+# VOICE_ENGINE_* env vars override these values.
+
+[engine]
+host = "127.0.0.1"
+port = 8100
+# Required when host is not 127.0.0.1 / localhost.
+# token = "change-me"
+data_dir = "data"
+# auto picks mlx on Apple Silicon, cuda on NVIDIA, else cpu when installed with --extra cpu.
+# fake needs no models.
+backend = "auto"
+preload = false
+# Origins allowed to call this server from a browser. * lets any frontend connect.
+cors_origins = "*"

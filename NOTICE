@@ -1,0 +1,30 @@
+Voice Generator
+Copyright (c) 2026 Voice Generator contributors
+
+This repository is licensed under the MIT License. See the LICENSE file.
+The MIT license covers the code in this repository. It does not cover the
+voice model weights, which are downloaded at runtime and stay under their
+own license.
+
+Model weights
+
+The engine downloads these models from Hugging Face on first use. They are
+not included here.
+
+  Qwen/Qwen3-TTS-12Hz-1.7B-VoiceDesign          Apache License 2.0
+  Qwen/Qwen3-TTS-12Hz-1.7B-Base                 Apache License 2.0
+  mlx-community/Qwen3-TTS-12Hz-1.7B-VoiceDesign-4bit
+  mlx-community/Qwen3-TTS-12Hz-1.7B-Base-bf16
+
+The Qwen3-TTS weights are published by Alibaba Cloud under the Apache
+License 2.0. That license governs the weights, including commercial use of
+audio you generate with them. Read the model card before you ship a product.
+
+Packages
+
+Runtime libraries are installed from their own registries and keep their
+own licenses. None of them is copyleft.
+
+  MIT           mlx-audio, mlx, FastAPI, Pydantic, httpx, React, React DOM, Bun
+  BSD-3-Clause  Uvicorn, NumPy, soundfile, PyTorch (CUDA installs)
+  Apache-2.0    qwen-tts (CUDA installs), TypeScript (development only)

@@ -1,0 +1,8 @@
+{
+  "type": "speak",
+  "voice_id": "narrator-male-v1",
+  "text": "What actually happens inside a combustion engine? Let's slow it down and look.",
+  "language": "English",
+  "seed": 1,
+  "params": { "temperature": 0.8 }
+}

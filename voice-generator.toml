@@ -1,0 +1,21 @@
+# Voice Generator configuration.
+# Start with:  bun start.ts
+# Dev reload:  bun start.ts --dev
+
+[server]
+# 127.0.0.1 serves this machine only. Use 0.0.0.0 to open it on a GPU server,
+# and set a token when you do.
+host = "127.0.0.1"
+port = 8180
+# token = "change-me"
+
+[engine]
+# The engine binds to 127.0.0.1. Only the studio talks to it.
+port = 8100
+# auto uses MLX on Apple Silicon, CUDA on NVIDIA, and otherwise the CPU when
+# the engine was installed with --extra cpu. fake needs no models at all.
+backend = "auto"
+data_dir = "data"
+# Load both models at startup so the first voice does not wait on a download check.
+# On the CPU that is about 14 GB of RAM; set false to load them one at a time.
+preload = true

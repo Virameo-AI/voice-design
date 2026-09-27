@@ -1,0 +1,8 @@
+{
+  "type": "lock",
+  "voice_id": "narrator-male-v1",
+  "from_job": "REPLACE_WITH_DESIGN_JOB_ID",
+  "candidate": 1,
+  "name": "Narrator (male)",
+  "notes": "Warm science explainer"
+}
