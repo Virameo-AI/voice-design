@@ -1,12 +1,47 @@
-# Voice Generator
+<p align="center">
+  <img src="docs/images/mark.svg" width="96" alt="">
+</p>
 
-Design a new speaking voice from a written description, lock the one you
-want, and generate speech with it. One command starts the engine and the
-web UI. The browser talks to a single address, on this machine or on a GPU
-server.
+<h1 align="center">Voice Design</h1>
 
-The code in this repository is [MIT licensed](LICENSE). The Qwen3-TTS weights
-it downloads are Apache-2.0 and are not included. See [NOTICE](NOTICE).
+<p align="center">
+  <strong>Design a speaking voice from a written description, then keep it.</strong><br>
+  Hear several candidates of that speaker, lock one, and generate new lines in that voice.<br>
+  One command starts the engine and the studio, on this machine or on a GPU server.
+</p>
+
+<p align="center">
+  <a href="LICENSE"><img src="https://img.shields.io/badge/license-MIT-728b5d" alt="MIT license"></a>
+  <img src="https://img.shields.io/badge/version-0.1.0-c65228" alt="version 0.1.0">
+</p>
+
+<p align="center">
+  <a href="#quick-start">Quick start</a> ·
+  <a href="#snapshots">Snapshots</a> ·
+  <a href="docs/backend.md">API</a> ·
+  <a href="docs/mcp.md">MCP</a> ·
+  <a href="LICENSE">License</a>
+</p>
+
+## Snapshots
+
+The studio, as it runs in the browser. Create a voice, keep it, then speak with it.
+
+<p align="center">
+  <img src="docs/images/create.png" alt="Create: describe a voice, compare candidates, and save one" width="920">
+</p>
+
+<p align="center">
+  <img src="docs/images/voices.png" alt="My voices: write a script and generate speech in a saved voice" width="920">
+</p>
+
+<p align="center">
+  <img src="docs/images/templates.png" alt="Templates: built-in voice recipes with a sample you can play first" width="920">
+</p>
+
+<p align="center">
+  <img src="docs/images/activity.png" alt="Activity: design, lock, and speech jobs with their status" width="920">
+</p>
 
 ## What you can do with it
 

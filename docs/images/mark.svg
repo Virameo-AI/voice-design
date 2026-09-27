@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="128" height="128" viewBox="0 0 128 128" role="img" aria-label="Voice Design">
+  <rect width="128" height="128" rx="36" fill="#493227"/>
+  <g transform="translate(32 32) scale(2)" fill="none" stroke="#fffdf8" stroke-width="3" stroke-linecap="round">
+    <path d="M4 16v3m5-9v12m5-18v24m5-17v10m5-15v20m5-13v6"/>
+  </g>
+</svg>
