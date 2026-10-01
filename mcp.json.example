@@ -1,11 +1,9 @@
 {
   "mcpServers": {
-    "voice-generator": {
-      "command": "bun",
-      "args": ["packages/mcp/src/index.ts"],
-      "env": {
-        "VOICE_GENERATOR_URL": "http://127.0.0.1:8180",
-        "VOICE_GENERATOR_OUT": "data/out"
+    "voice-design": {
+      "url": "http://127.0.0.1:8180/mcp",
+      "headers": {
+        "Authorization": "Bearer change-me"
       }
     }
   }

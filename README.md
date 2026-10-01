@@ -171,15 +171,15 @@ Jobs, voices, and audio live in one SQLite file. The layout is in
 
 ## MCP for agents
 
-`packages/mcp` speaks the same three sections over stdio. An agent can design
-candidates, lock one, then call `speak` with a voice id and text. `speak` waits
-for the WAV and returns its path under `data/out`, ready for the next step.
+voice-design is the MCP endpoint on the studio, at `http://<server>:8180/mcp`.
+An agent can design candidates, download those previews, lock one, then call
+`speak` with a voice id and text. `design_voice`, `preview_voice`, and `speak`
+wait for the WAV and return its path under `data/out` on the server, ready for
+the next content step. Templates and the profile store recipes and kept voices.
 
-Tools: `list_voices`, `design_voice`, `lock_voice`, `speak`.
-
-The server must already be running (`bun start.ts`). Register the MCP server
-from [mcp.json.example](mcp.json.example). This repository includes
-`.cursor/mcp.json` for Cursor. See [docs/mcp.md](docs/mcp.md).
+The server must already be running (`bun start.ts`). A remote client sends the
+same bearer token as the studio. The tool list and the client config are in
+[docs/mcp.md](docs/mcp.md).
 
 ## Layout
 
@@ -190,7 +190,7 @@ LICENSE  NOTICE         MIT for this code; model and library notices
 common/openapi.json      API contract
 packages/engine/         Python. Models, queue, voices. Loopback only.
 packages/studio/         TypeScript. The page, and the proxy to the engine.
-packages/mcp/            MCP server. Agents design voices and save spoken WAVs.
+packages/mcp/            voice-design tools, served at /mcp on the studio.
 data/                    generated audio (not part of the source)
 docs/                    API reference, the studio notes, and the database design
 ```

@@ -84,6 +84,7 @@ try {
 
 const shown = host === "0.0.0.0" || host === "::" ? "127.0.0.1" : host;
 console.log(`voice-generator  http://${shown}:${port}`);
+console.log(`voice-design     http://${shown}:${port}/mcp`);
 
 studio = Bun.spawn(["bun", ...(dev ? ["--hot"] : []), "server.ts", ...(dev ? [] : ["--production"])], {
   cwd: join(root, "packages/studio"),
@@ -95,6 +96,7 @@ studio = Bun.spawn(["bun", ...(dev ? ["--hot"] : []), "server.ts", ...(dev ? [] 
     PORT: String(port),
     VOICE_ENGINE_URL: `http://127.0.0.1:${enginePort}`,
     VOICE_GENERATOR_TOKEN: token,
+    VOICE_DESIGN_OUT: join(root, "data/out"),
   },
 });
 

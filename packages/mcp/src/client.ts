@@ -1,4 +1,4 @@
-// HTTP client for the voice-generator studio. The MCP process never loads a model.
+// HTTP client for the voice engine. The MCP endpoint never loads a model.
 
 export interface Job {
   id: string;
@@ -51,14 +51,36 @@ export class VoiceClient {
     return response;
   }
 
+  async request<T>(method: string, path: string, body?: unknown): Promise<T> {
+    const response = await this.send(path, {
+      method,
+      headers: this.headers(body !== undefined),
+      body: body === undefined ? undefined : JSON.stringify(body),
+    });
+    if (response.status === 204) return undefined as T;
+    const text = await response.text();
+    if (!text) return undefined as T;
+    return JSON.parse(text) as T;
+  }
+
   async post<T>(path: string, body: unknown): Promise<T> {
-    const response = await this.send(path, { method: "POST", headers: this.headers(true), body: JSON.stringify(body) });
-    return (await response.json()) as T;
+    return this.request<T>("POST", path, body);
   }
 
   async get<T>(path: string): Promise<T> {
-    const response = await this.send(path, { headers: this.headers() });
-    return (await response.json()) as T;
+    return this.request<T>("GET", path);
+  }
+
+  async put<T>(path: string, body: unknown): Promise<T> {
+    return this.request<T>("PUT", path, body);
+  }
+
+  async patch<T>(path: string, body: unknown): Promise<T> {
+    return this.request<T>("PATCH", path, body);
+  }
+
+  async del(path: string): Promise<void> {
+    await this.request<void>("DELETE", path);
   }
 
   async wait(path: string, timeoutMs: number): Promise<Job> {

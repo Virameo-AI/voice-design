@@ -244,7 +244,8 @@ curl -s -o line.wav localhost:8180/v1/jobs/<job_id>/files/audio.wav
 Set `server.host` to `0.0.0.0` and `server.token` in `voice-generator.toml`, then
 run `bun start.ts` on the server. The studio refuses to publish itself without a
 token. The engine stays on `127.0.0.1`. From another machine, call
-`http://<server>:8180` and send `Authorization: Bearer <token>`.
+`http://<server>:8180` and send `Authorization: Bearer <token>`. The MCP
+endpoint is `http://<server>:8180/mcp` with that same header.
 
 ## Install
 

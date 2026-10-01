@@ -1,6 +1,7 @@
 // The only HTTP server a browser talks to. It serves the UI and forwards the
 // voice API to the engine on this machine.
 import { timingSafeEqual } from "node:crypto";
+import { handleMcp, lanAddress } from "../mcp/src/http.ts";
 import index from "./index.html";
 
 const ENGINE = (process.env.VOICE_ENGINE_URL ?? "http://127.0.0.1:8100").replace(/\/+$/, "");
@@ -12,6 +13,13 @@ function authorized(req: Request): boolean {
   const got = Buffer.from(req.headers.get("authorization") ?? "");
   const expected = Buffer.from(`Bearer ${TOKEN}`);
   return got.length === expected.length && timingSafeEqual(got, expected);
+}
+
+async function mcp(req: Request): Promise<Response> {
+  if (!authorized(req)) {
+    return Response.json({ detail: "missing or wrong bearer token" }, { status: 401, headers: { "WWW-Authenticate": "Bearer" } });
+  }
+  return handleMcp(req);
 }
 
 async function proxy(req: Request): Promise<Response> {
@@ -44,6 +52,8 @@ const server = Bun.serve({
   development: !production,
   routes: {
     "/health": proxy,
+    "/mcp": mcp,
+    "/mcp/": mcp,
     "/openapi.json": proxy,
     "/docs": proxy,
     "/docs/*": proxy,
@@ -53,4 +63,7 @@ const server = Bun.serve({
   },
 });
 
+const host = process.env.HOST ?? "127.0.0.1";
+const advertised = host === "0.0.0.0" || host === "::" ? lanAddress() : host;
 console.log(`voice-generator studio on ${server.url}`);
+console.log(`voice-design  http://${advertised}:${server.port}/mcp`);

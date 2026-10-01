@@ -1,11 +1,8 @@
 {
-  "name": "voice-generator-mcp",
+  "name": "voice-design",
   "version": "0.1.0",
   "private": true,
   "type": "module",
-  "bin": {
-    "voice-generator-mcp": "./src/index.ts"
-  },
   "scripts": {
     "start": "bun src/index.ts"
   },
