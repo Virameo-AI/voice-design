@@ -1,6 +1,13 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="128" height="128" viewBox="0 0 128 128" role="img" aria-label="Voice Design">
-  <rect width="128" height="128" rx="36" fill="#493227"/>
-  <g transform="translate(32 32) scale(2)" fill="none" stroke="#fffdf8" stroke-width="3" stroke-linecap="round">
-    <path d="M4 16v3m5-9v12m5-18v24m5-17v10m5-15v20m5-13v6"/>
+  <defs>
+    <linearGradient id="brand" x1="6.7%" y1="25%" x2="93.3%" y2="75%">
+      <stop offset="0%" stop-color="#6d28d9"/>
+      <stop offset="55%" stop-color="#db2777"/>
+      <stop offset="100%" stop-color="#f97316"/>
+    </linearGradient>
+  </defs>
+  <rect width="128" height="128" rx="36" fill="url(#brand)"/>
+  <g transform="translate(32 32) scale(4)" fill="none" stroke="#fff" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M1 8.5h2.2l1.5-5 2 9 1.7-6.4L10 8.5H15"/>
   </g>
 </svg>
