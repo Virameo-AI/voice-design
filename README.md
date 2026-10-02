@@ -5,102 +5,114 @@
 <h1 align="center">Voice Design</h1>
 
 <p align="center">
-  <strong>Design a speaking voice from a written description, then keep it.</strong><br>
-  Hear several candidates of that speaker, lock one, and generate new lines in that voice.<br>
-  One command starts the engine and the studio, on this machine or on a GPU server.
+  <strong>Design a speaking voice from a description, keep it, and narrate with it.</strong><br>
+  Qwen3-TTS designs and speaks. Tags such as <code>[laughs]</code> and <code>[whispers]</code> mark a beat; the words are what get spoken.<br>
+  One dashboard, one HTTP API, and one MCP endpoint share the same library, on this machine or on a GPU server.
 </p>
 
 <p align="center">
   <a href="LICENSE"><img src="https://img.shields.io/badge/license-MIT-728b5d" alt="MIT license"></a>
-  <img src="https://img.shields.io/badge/version-0.1.0-c65228" alt="version 0.1.0">
+  <img src="https://img.shields.io/badge/version-0.2.0-c65228" alt="version 0.2.0">
 </p>
 
 <p align="center">
   <a href="#quick-start">Quick start</a> ·
   <a href="#snapshots">Snapshots</a> ·
+  <a href="#set-up-for-your-machine">Environments</a> ·
   <a href="docs/backend.md">API</a> ·
   <a href="docs/mcp.md">MCP</a> ·
-  <a href="LICENSE">License</a>
+  <a href="CHANGELOG.md">Changelog</a>
 </p>
 
 ## Snapshots
 
-The studio, as it runs in the browser. Create a voice, keep it, then speak with it.
+The dashboard as it runs in the browser, captured from the fake backend so
+the audio is synthetic and the flow is real.
 
 <p align="center">
-  <img src="docs/images/create.png" alt="Create: describe a voice, compare candidates, and save one" width="920">
+  <img src="docs/images/playground.png" alt="Playground: pick a template, generate takes, keep one" width="920">
 </p>
 
 <p align="center">
-  <img src="docs/images/voices.png" alt="My voices: write a script and generate speech in a saved voice" width="920">
+  <img src="docs/images/voices.png" alt="Voices: saved voices with their versions and one-click Studio styles" width="920">
 </p>
 
 <p align="center">
-  <img src="docs/images/templates.png" alt="Templates: built-in voice recipes with a sample you can play first" width="920">
+  <img src="docs/images/studio.png" alt="Studio: a tagged script rendered beat by beat with one voice version and one style" width="920">
 </p>
 
 <p align="center">
-  <img src="docs/images/activity.png" alt="Activity: design, lock, and speech jobs with their status" width="920">
+  <img src="docs/images/downloads.png" alt="Downloads: narrations, voice masters, and speech, with play and WAV" width="920">
+</p>
+
+<p align="center">
+  <img src="docs/images/connect.png" alt="Connect: API and MCP status, token, and the control-to-endpoint map" width="920">
+</p>
+
+Dark mode follows the system and can be toggled from the top bar:
+
+<p align="center">
+  <img src="docs/images/studio-dark.png" alt="Studio in dark mode" width="920">
 </p>
 
 ## What you can do with it
 
-- Describe a voice (age, pitch, pace, accent, role) and hear several
-  candidates of that speaker.
-- Lock one candidate under a permanent id, such as `narrator-male-v1`.
-- Generate new lines, including multi-line scripts, in that voice, and play
-  or download the WAV in the browser.
-- Run the same flow on a remote NVIDIA machine and open the UI from a laptop.
-- Skip the UI and drive the HTTP API with curl or the Swagger page.
-
-## Requirements
-
-| Machine | Backend | Extra |
+| Stage | What happens | Model |
 | --- | --- | --- |
-| Mac, Apple Silicon | MLX (Metal) | `--extra mac` |
-| Linux or Windows with NVIDIA | CUDA, qwen-tts | `--extra cuda` |
-| Linux or Mac without a GPU | CPU, qwen-tts | `--extra cpu` |
-| Tests, no models | fake tones | `--extra dev` only |
+| **Playground** | Describe a speaker, hear 2–8 takes, keep one. Every Generate is a saved run under a playground, so you can come back to it. | Qwen3-TTS VoiceDesign |
+| **Voices** | Kept takes become voices. Version 1 is the kept take. Favorite, archive, rename, copy. | |
+| **Studio** | Write a script with `[laughs]`, `[whispers]`, `[pause 0.8s]`. Pick a voice and a style. Render up to about ten minutes as one stitched WAV. | Qwen3-TTS Base |
+| **Downloads** | Every WAV: narrations, voice masters, speech. Play, download, copy URL. | |
+| **Connect** | API and MCP status, token entry, and a table of which control maps to which field. | |
 
-- Python 3.12 and [uv](https://docs.astral.sh/uv/)
-- [Bun](https://bun.sh) 1.1 or newer
-- A few gigabytes of disk for the model weights, downloaded on first use
-
-`backend = "auto"` picks MLX on Apple Silicon, CUDA when PyTorch sees an
-NVIDIA GPU, and otherwise the CPU when `--extra cpu` is installed. The CPU
-path runs the same 1.7B models in float32. It is several times slower than a
-GPU (about 30 seconds for a 4 second line on an 8-core laptop) and needs
-around 14 GB of free RAM when both models are loaded. Set `preload = false`
-to load them one at a time.
+Everything the dashboard does is a call on the API, and every API call has an
+MCP tool. An agent and a person work on the same playgrounds, voices, and
+narrations.
 
 ## Quick start
 
-```bash
-# Apple Silicon. On NVIDIA use --extra cuda, on a machine without a GPU --extra cpu.
-uv sync --python 3.12 --project packages/engine --extra mac --extra dev
-bun install --cwd packages/studio
+Requirements: Python 3.12 with [uv](https://docs.astral.sh/uv/), and
+[Bun](https://bun.sh) 1.1 or newer.
 
-bun start.ts
+```bash
+bun setup.ts        # picks mlx / cuda / cpu for this machine, installs, downloads the Qwen weights
+bun install --cwd packages/studio
+bun start.ts        # engine on 127.0.0.1:8100, dashboard + API + MCP on http://127.0.0.1:8180
 ```
 
-Open <http://127.0.0.1:8180>. The first voice design downloads the models and
-takes longer than the ones after it.
+Open <http://127.0.0.1:8180>. Pick a template, press **Generate takes**, play
+them, press **Keep** on one. The **Narrate now** toast opens the Studio with
+that voice.
 
-`bun start.ts --dev` reloads the UI when you edit it. The engine keeps running.
+`bun setup.ts --backend=cpu` (or `mlx`, `cuda`) overrides the detection.
+`bun start.ts --dev` reloads the dashboard when its files change; the engine
+keeps running.
 
-## Use it
+## Set up for your machine
 
-1. **Design.** Write a description and a preview sentence. Generate two to
-   eight candidates. Each one is a different seed of that description. Play
-   them in the page.
-2. **Lock.** Pick a candidate and give it an id like `narrator-v1`. Ids are
-   permanent. A new version is a new id, such as `narrator-v2`.
-3. **Speak.** Select the voice, type the lines you want, and generate. One
-   paragraph per line. The takes stay listed under that voice, with a player,
-   a download, and automatic quality checks.
+| Machine | Qwen backend | Setup |
+| --- | --- | --- |
+| Mac, Apple Silicon | `mlx` | `bun setup.ts` |
+| Linux / Windows, NVIDIA | `cuda` | `bun setup.ts` |
+| No GPU | `cpu` | `bun setup.ts --backend=cpu` (slow: about 30 s for a 4 s line) |
+| Tests, no models | `fake` | `uv sync --project packages/engine --extra dev` |
 
-The header shows whether the engine is idle or generating, which backend it
-is using, and a link to the API docs.
+`uv run --project packages/engine voice-engine doctor` prints the machine and
+which Qwen backend the engine will use.
+
+The CPU path runs the same 1.7B models in float32 and needs about 14 GB of
+free RAM with both models loaded. Set `preload = false` to load them one at
+a time.
+
+### Manual install
+
+`bun setup.ts` runs these two commands:
+
+```bash
+# Apple Silicon --extra mac · NVIDIA --extra cuda · no GPU --extra cpu
+uv sync --python 3.12 --project packages/engine --extra mac
+uv run --project packages/engine voice-engine setup --backend mlx   # downloads the two Qwen repos
+```
 
 ## Run it on a GPU server
 
@@ -116,10 +128,10 @@ token = "a-long-random-string"
 backend = "cuda"    # or "auto"
 ```
 
-Start it on the server with `bun start.ts`, then open
-`http://<server>:8180` from another machine and enter the token. The engine
-itself listens only on `127.0.0.1` of that server. The token is checked by
-the studio before a request is forwarded.
+Start it on the server with `bun start.ts`, open `http://<server>:8180` from
+another machine, and paste the token on **Connect**. The engine itself
+listens only on `127.0.0.1` of that server. The studio checks the token
+before forwarding anything to `/v1` or `/mcp`.
 
 ## Configuration
 
@@ -127,104 +139,99 @@ the studio before a request is forwarded.
 
 | Key | Default | Meaning |
 | --- | --- | --- |
-| `server.host` | `127.0.0.1` | `0.0.0.0` publishes the UI and API |
+| `server.host` | `127.0.0.1` | `0.0.0.0` publishes the dashboard, API, and MCP |
 | `server.port` | `8180` | Address the browser opens |
 | `server.token` | empty | Required when `host` is not loopback |
 | `engine.port` | `8100` | Loopback port of the engine |
 | `engine.backend` | `auto` | `auto`, `mlx`, `cuda`, `cpu`, or `fake` |
-| `engine.data_dir` | `data` | Jobs and locked voices |
-| `engine.preload` | `true` | Load both models at startup |
+| `engine.data_dir` | `data` | `studio.db` and MCP downloads |
+| `engine.preload` | `true` | Load both Qwen models at startup |
 
 ## HTTP API
 
-With the tool running, the API and Swagger UI are on the same origin:
+With the tool running, Swagger UI and the spec are on the same origin:
+<http://127.0.0.1:8180/docs> and <http://127.0.0.1:8180/openapi.json>.
+`common/openapi.json` is the same document checked in, so a client can be
+generated without starting the server.
 
-- <http://127.0.0.1:8180/docs>
-- <http://127.0.0.1:8180/openapi.json>
+| Section | Create | Read | Act | Download |
+| --- | --- | --- | --- | --- |
+| Playgrounds | `POST /v1/playgrounds` | `GET /v1/playgrounds/{id}` | `PATCH`, `POST …/copy`, `POST …/runs` | takes via `GET /v1/jobs/{job}/files/candidate-01.wav` |
+| Voices | `POST /v1/voices` (keep) | `GET /v1/voices` | `PATCH`, `POST …/copy`, `DELETE` | `GET /v1/voices/{id}/files/master.wav` |
+| Versions | | `GET /v1/voices/{id}/versions` | `PATCH …/{version}` | `GET …/{version}/master.wav` |
+| Styles | `POST /v1/styles` | `GET /v1/styles` | `PATCH`, `DELETE` | |
+| Narrations | `POST /v1/narrations` | `GET /v1/narrations/{id}` | `PATCH`, `POST …/render`, `POST …/copy`, `DELETE` | `GET /v1/narrations/{id}/audio.wav` |
+| Downloads | | `GET /v1/downloads` | | each row has `url` |
+| Jobs | `POST /v1/jobs`, `/v1/designs`, `/v1/speech`, `/v1/renders` | `GET /v1/jobs/{id}` | `DELETE` (cancel) | `GET /v1/jobs/{id}/files/{name}` |
 
-`common/openapi.json` is the same document, checked into the repository so a
-client can be generated without starting the server. Regenerate it with
-`uv run --project packages/engine python scripts/export_openapi.py`.
+Long work is a job. The response is immediate; poll `GET /v1/jobs/{id}` and
+read `progress` (`phase`, `detail`, `completed`, `total`). Downloading a file
+before it exists returns `409` with the progress text. Details, job specs,
+and the audio checks are in [docs/backend.md](docs/backend.md). The database
+layout is in [docs/database.md](docs/database.md).
 
 ```bash
 curl -s http://127.0.0.1:8180/health
-
-curl -s -X POST http://127.0.0.1:8180/v1/jobs \
-  -H 'content-type: application/json' \
-  -d @packages/engine/examples/design.json
+curl -s -X POST http://127.0.0.1:8180/v1/narrations -H 'content-type: application/json' \
+  -d '{"title":"Intro","voice_id":"warm-narrator-v1","style_id":"narration","script":"[calm] The room went quiet."}'
+curl -s -X POST http://127.0.0.1:8180/v1/narrations/NAR_ID/render        # returns the job
+curl -s -o intro.wav http://127.0.0.1:8180/v1/narrations/NAR_ID/audio.wav  # once the job succeeded
 ```
-
-A job returns immediately. Poll `GET /v1/jobs/{id}` until `status` is
-`succeeded`, then download the WAV from the `url` field on each output.
-The agent-facing API is split into three sections. `/v1/jobs` remains the
-shared queue the web UI uses.
-
-| Section | Create | Read | Download |
-| --- | --- | --- | --- |
-| Voice design | `POST /v1/designs` | `GET /v1/designs/{id}` | `GET /v1/designs/{id}/files/candidate-01.wav` |
-| Voices | `POST /v1/voices` | `GET /v1/voices` | `GET /v1/voices/{id}/files/master.wav` |
-| Speech | `POST /v1/speech` | `GET /v1/speech/{id}` | `GET /v1/speech/{id}/audio` |
-
-Details of the model settings and the audio checks are in [docs/backend.md](docs/backend.md).
-Jobs, voices, and audio live in one SQLite file. The layout is in
-[docs/database.md](docs/database.md).
 
 ## MCP for agents
 
-voice-design is the MCP endpoint on the studio, at `http://<server>:8180/mcp`.
-An agent can design candidates, download those previews, lock one, then call
-`speak` with a voice id and text. `design_voice`, `preview_voice`, and `speak`
-wait for the WAV and return its path under `data/out` on the server, ready for
-the next content step. Templates and the profile store recipes and kept voices.
-
-The server must already be running (`bun start.ts`). A remote client sends the
-same bearer token as the studio. The tool list and the client config are in
-[docs/mcp.md](docs/mcp.md).
+voice-design is the MCP endpoint on the studio, `http://<server>:8180/mcp`.
+Tools mirror the API: `create_playground`, `run_playground`, `lock_voice`,
+`create_narration`, `render_saved_narration`,
+`download_narration`, `list_downloads`, and the rest. Long jobs return a job
+id at once; `get_job` reports progress and a `next` sentence that says
+whether to wait, download, or resubmit. Downloads write WAVs under
+`data/out` and return paths, never bytes. The tool list and the client
+config are in [docs/mcp.md](docs/mcp.md).
 
 ## Layout
 
 ```text
 voice-generator.toml     configuration
+setup.ts                 one-command install and weight download
 start.ts                 starts the engine, then the studio
-LICENSE  NOTICE         MIT for this code; model and library notices
 common/openapi.json      API contract
-packages/engine/         Python. Models, queue, voices. Loopback only.
-packages/studio/         TypeScript. The page, and the proxy to the engine.
+packages/engine/         Python. Models, queue, library, SQLite. Loopback only.
+packages/studio/         TypeScript. The dashboard and the proxy to the engine.
 packages/mcp/            voice-design tools, served at /mcp on the studio.
-data/                    generated audio (not part of the source)
-docs/                    API reference, the studio notes, and the database design
+design/dashboard.html    the standalone UI mock the dashboard was built from
+docs/                    backend, database, frontend, MCP, templates
+data/                    studio.db and generated audio (not part of the source)
 ```
 
 The studio does not import the engine. It forwards `/health`, `/v1/*`,
-`/docs`, and `/openapi.json` to it. That split is what lets the UI and the
-models restart independently, and what keeps the model port off the network.
+`/docs`, and `/openapi.json`. The UI and the models restart independently,
+and the model port stays off the network.
 
 ## Development
 
-See [CONTRIBUTING.md](CONTRIBUTING.md).
-
 ```bash
-uv run --project packages/engine pytest
+uv run --project packages/engine --extra dev pytest packages/engine/tests   # fake backend
+bun test packages/mcp/tests                                                 # tools, HTTP transport
 bun run --cwd packages/studio typecheck
-uv run --project packages/engine voice-engine doctor
+uv run --project packages/engine python packages/engine/scripts/export_openapi.py
 ```
+
+See [CONTRIBUTING.md](CONTRIBUTING.md). Changes between versions are in
+[CHANGELOG.md](CHANGELOG.md).
 
 ## Models
 
-Voice design uses Qwen3-TTS 1.7B VoiceDesign. Locking and speaking use
-Qwen3-TTS 1.7B Base. On Apple Silicon the engine loads the MLX builds
-(`mlx-community`, 4-bit VoiceDesign and bf16 Base). On NVIDIA and on the CPU
-it loads the upstream Qwen weights through the `qwen-tts` package, in bf16 on
-the GPU and float32 on the CPU.
+Design uses Qwen3-TTS 1.7B VoiceDesign; keeping and speaking use Qwen3-TTS
+1.7B Base. On Apple Silicon the engine loads the MLX builds
+(`mlx-community`, 4-bit VoiceDesign and bf16 Base); on NVIDIA and CPU it
+loads the upstream Qwen weights through `qwen-tts`.
 
-Generation settings exposed in the UI and the API: temperature, top-p,
-top-k, repetition penalty, max tokens, and speed. Speed applies on MLX.
-The job record lists which settings the backend applied and which it ignored.
+Qwen settings on the dashboard, API, and MCP: temperature, top-p, top-k,
+repetition penalty, max tokens, speed (MLX). Each job records which settings
+were applied and which were deferred.
 
 ## License
 
-[MIT](LICENSE) for the code in this repository.
-
-The Qwen3-TTS weights are Apache License 2.0 and are downloaded separately.
-Libraries are MIT or BSD-3-Clause, with Apache-2.0 for `qwen-tts` and for
-the TypeScript compiler. The full list is in [NOTICE](NOTICE).
+[MIT](LICENSE) for the code in this repository. Qwen3-TTS weights are
+Apache-2.0 and download separately. Library notices are in [NOTICE](NOTICE).

@@ -1,9 +1,11 @@
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { z } from "zod";
-import type { Job, VoiceClient } from "./client.ts";
+import { nextStep, type Job, type VoiceClient } from "./client.ts";
 import { saveDesignTakes, saveDownload, speechPath, templatePath, voiceFileName, voicePath } from "./files.ts";
+import { LIBRARY_TOOL_NAMES, registerLibraryTools } from "./tools_library.ts";
 
 export const TOOL_NAMES = [
+  ...LIBRARY_TOOL_NAMES,
   "design_voice",
   "list_designs",
   "get_design",
@@ -14,6 +16,7 @@ export const TOOL_NAMES = [
   "delete_voice",
   "download_voice",
   "speak",
+  "render_narration",
   "list_speech",
   "get_speech",
   "download_speech",
@@ -76,7 +79,10 @@ function summary(job: Job) {
     type: job.type,
     status: job.status,
     voice_id: job.voice_id,
+    version_id: job.version_id ?? null,
     error: job.error,
+    progress: job.progress ?? null,
+    next: nextStep(job),
     outputs: job.outputs.map((output) => ({
       file: output.file,
       url: output.url,
@@ -109,13 +115,14 @@ export function registerTools(server: McpServer, client: VoiceClient, outDir: st
       }
     });
   };
+  registerLibraryTools(add, client, outDir);
 
   add(
     "design_voice",
     {
       title: "Design candidate voices",
       description:
-        "Create several candidate speakers from a description and wait until they are ready. Saves each candidate WAV and returns its absolute path so the next step can listen or analyze it. Then lock_voice with the design id and candidate number.",
+        "Create several candidate speakers from a description and wait until they are ready. On a 24 GB Mac, four takes take a few minutes. This call waits up to 20 minutes. If it times out, the error names the job. Call get_job with that id. progress.completed counts finished takes. Do not submit a second design for the same request while the first is queued or running. Then lock_voice with the design id and candidate number. Each candidate WAV is saved on disk and the result is its path, not the audio bytes.",
       inputSchema: {
         instruct: z.string().describe("Who is speaking: gender, age, pitch, pace, accent, role."),
         text: z.string().describe("The preview line every candidate reads."),
@@ -230,9 +237,10 @@ export function registerTools(server: McpServer, client: VoiceClient, outDir: st
     "speak",
     {
       title: "Speak with a locked voice",
-      description: "Generate speech from text with a locked voice_id, wait for it, and save the WAV. Returns the absolute file path for the next content step.",
+      description: "Speak a short script with a locked voice and wait up to 10 minutes. Returns a file path, not audio bytes. A script of several minutes, or one with [laughs] and [whispers], should use render_narration instead. That tool returns immediately and you poll get_job. If this call times out, call get_job. Do not send the same text again while this job is queued or running.",
       inputSchema: {
         voice_id: voiceId,
+        version_id: z.string().optional().describe("A voice version such as narrator-v1@2. Default: the current version."),
         text: z.string().describe("One paragraph per line. Lines are generated separately and joined."),
         language: z.string().optional(),
         seed: z.number().int().min(0).optional().describe("Same seed and text produce the same take."),
@@ -242,6 +250,7 @@ export function registerTools(server: McpServer, client: VoiceClient, outDir: st
     async (args) => {
       const created = await client.post<Job>("/v1/speech", compact({
         voice_id: args.voice_id,
+        version_id: args.version_id,
         text: args.text,
         language: args.language ?? "English",
         seed: args.seed ?? 1,
@@ -274,15 +283,45 @@ export function registerTools(server: McpServer, client: VoiceClient, outDir: st
     inputSchema: { speech_id: z.string() },
   }, async (args) => summary(await client.get<Job>(`/v1/speech/${encodeURIComponent(args.speech_id)}`)));
 
+  add(
+    "render_narration",
+    {
+      title: "Start a long narration",
+      description:
+        "Start a narration and return immediately with the job id. Poll get_job until status is succeeded or failed. progress.completed and progress.total count beats. A 10 minute script is about 30 minutes on a 24 GB Mac and about 30 MB as a WAV. Segment files show up in outputs as they finish. Call download_speech only after succeeded. cancel_job works only while the job is still queued.",
+      inputSchema: {
+        voice_id: voiceId,
+        version_id: z.string().optional().describe("A voice version such as narrator-v1@2. Default: the current version."),
+        text: z.string().describe("Up to about ten minutes. Tags such as [laughs] and [whispers] mark a beat."),
+        style: z.string().optional().describe("A style id from list_styles. Default narration."),
+        language: z.string().optional(),
+        seed: z.number().int().min(0).optional(),
+        params,
+      },
+    },
+    async (args) => {
+      const created = await client.post<Job>("/v1/renders", compact({
+        voice_id: args.voice_id,
+        version_id: args.version_id,
+        text: args.text,
+        style: args.style ?? "narration",
+        language: args.language ?? "English",
+        seed: args.seed ?? 1,
+        params: args.params ? compact(args.params) : undefined,
+      }));
+      return summary(created);
+    },
+  );
+
   add("download_speech", {
     title: "Download a finished speech",
-    description: "Save an existing speech job as a WAV and return the absolute path.",
+    description: "Write a succeeded speech or narration WAV to disk and return the absolute path. Refuses a job that is still queued or running. The tool result never contains the audio bytes. A 10 minute file is about 30 MB.",
     inputSchema: { speech_id: z.string() },
   }, async (args) => {
-    const job = await client.get<Job>(`/v1/speech/${encodeURIComponent(args.speech_id)}`);
-    if (job.status !== "succeeded" || !job.voice_id) throw new Error(`speech is ${job.status}`);
+    const job = await client.get<Job>(`/v1/jobs/${encodeURIComponent(args.speech_id)}`);
+    if (job.status !== "succeeded" || !job.voice_id) throw new Error(`${job.status}. ${nextStep(job)}`);
     const file = speechPath(outDir, job.voice_id, job.id);
-    await saveDownload(client, `/v1/speech/${encodeURIComponent(job.id)}/audio`, file);
+    await saveDownload(client, `/v1/jobs/${encodeURIComponent(job.id)}/files/audio.wav`, file);
     return { file, voice_id: job.voice_id, speech_id: job.id };
   });
 
@@ -405,23 +444,23 @@ export function registerTools(server: McpServer, client: VoiceClient, outDir: st
 
   add("list_jobs", {
     title: "List jobs",
-    description: "Design, lock, and speech jobs, newest first.",
+    description: "Design, lock, speech, and narration jobs, newest first. Use status=running to see what is still working.",
     inputSchema: {
       status: z.enum(["queued", "running", "succeeded", "failed", "cancelled"]).optional(),
-      type: z.enum(["design", "lock", "speak"]).optional(),
+      type: z.enum(["design", "lock", "speak", "render"]).optional(),
       limit: z.number().int().min(1).max(500).optional(),
     },
   }, async (args) => client.get(`/v1/jobs${query(args)}`));
 
   add("get_job", {
     title: "Read a job",
-    description: "Status and outputs for any design, lock, or speech job.",
+    description: "Status, progress, and the next action for any job. Call this every 15 seconds while a job is queued or running. progress.detail says what the worker is doing. next says whether to wait, download, or submit again.",
     inputSchema: { job_id: z.string() },
   }, async (args) => summary(await client.get<Job>(`/v1/jobs/${encodeURIComponent(args.job_id)}`)));
 
   add("cancel_job", {
     title: "Cancel a queued job",
-    description: "Cancel a job that is still queued.",
+    description: "Cancel a job that is still queued. A running job returns an error. Wait for it, or let it finish, then delete_job if you do not want the audio.",
     inputSchema: { job_id: z.string() },
   }, async (args) => summary(await client.request<Job>("DELETE", `/v1/jobs/${encodeURIComponent(args.job_id)}`)));
 

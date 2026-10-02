@@ -130,9 +130,13 @@ def test_version_1_upgrades_and_restores_builtins(tmp_path):
     db.close()
 
     storage = open_storage(tmp_path)
-    assert storage.query("SELECT version FROM schema_version")[0]["version"] == 2
+    assert storage.query("SELECT version FROM schema_version")[0]["version"] == 4
     assert storage.query("SELECT name FROM sqlite_master WHERE name = 'presets'") == []
-    assert storage.voices.get("keep-v1")["name"] == "Keep"
+    kept = storage.voices.get("keep-v1")
+    assert kept["name"] == "Keep"
+    assert kept["current_version_id"] == "keep-v1@1"
+    assert [v["version_no"] for v in storage.versions.list("keep-v1")] == [1]
+    assert {s["id"] for s in storage.styles.list()} >= {"narration", "comedy", "commercial", "kids"}
     assert len(storage.templates.list()) == len(CATALOG)
     assert storage.templates.wav("builtin-animated")[:4] == b"RIFF"
 
@@ -151,6 +155,6 @@ def test_fresh_database_is_version_2(tmp_path):
     version = db.execute("SELECT version FROM schema_version").fetchone()[0]
     tables = {row[0] for row in db.execute("SELECT name FROM sqlite_master WHERE type = 'table'")}
     db.close()
-    assert version == 2
+    assert version == 4
     assert "presets" not in tables
-    assert {"templates", "template_samples", "favorites"} <= tables
+    assert {"templates", "template_samples", "favorites", "playgrounds", "playground_runs", "voice_versions", "styles", "narrations"} <= tables

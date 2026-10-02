@@ -27,6 +27,11 @@ def join(chunks: list, sample_rate: int, gap_s: float = 0.25) -> np.ndarray:
     return np.concatenate(out)
 
 
+def read_wav(data: bytes) -> tuple[np.ndarray, int]:
+    audio, rate = sf.read(io.BytesIO(data), dtype="float32", always_2d=True)
+    return audio.mean(axis=1).astype("float32"), int(rate)
+
+
 def wav_bytes(audio, sample_rate: int) -> bytes:
     buffer = io.BytesIO()
     sf.write(buffer, to_mono(audio), sample_rate, format="WAV")

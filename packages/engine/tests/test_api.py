@@ -115,11 +115,35 @@ def test_design_and_speech_sections(client):
     assert client.get("/v1/speech").json()[0]["id"] == spoken["id"]
     assert client.get("/v1/designs").json()[0]["id"] == design["id"]
 
+    rendered = wait(
+        client,
+        client.post(
+            "/v1/renders",
+            json={
+                "voice_id": "section-v1",
+                "style": "comedy",
+                "text": "[whispers] Don't look now. [laughs] Then the room broke.",
+            },
+        ).json()["id"],
+    )
+    assert rendered["status"] == "succeeded"
+    assert rendered["type"] == "render"
+    names = [item["file"] for item in rendered["outputs"]]
+    assert "audio.wav" in names and any(name.startswith("segment-") for name in names)
+    assert "tag:whispers" in rendered["deferred"]
+    assert rendered["progress"]["phase"] == "done"
+    assert rendered["progress"]["completed"] == rendered["progress"]["total"] > 0
+    missing = client.get(f"/v1/jobs/{rendered['id']}/files/not-a-real.wav")
+    assert missing.status_code == 404
+    assert "tag:laughs" in rendered["deferred"]
+    wav = client.get(f"/v1/jobs/{rendered['id']}/files/audio.wav")
+    assert wav.status_code == 200 and wav.content[:4] == b"RIFF"
+
 
 def test_swagger_and_download(client):
     spec = client.get("/openapi.json").json()
     examples = spec["paths"]["/v1/jobs"]["post"]["requestBody"]["content"]["application/json"]["examples"]
-    assert {"design", "lock", "speak"} <= set(examples)
+    assert {"design", "lock", "speak", "render"} <= set(examples)
     download = spec["paths"]["/v1/jobs/{job_id}/files/{name}"]["get"]
     assert "audio/wav" in download["responses"]["200"]["content"]
     assert "swagger-ui" in client.get("/docs").text

@@ -10,6 +10,7 @@ from voice_engine.catalog import ensure_catalog
 from voice_engine.storage.favorites import Favorites
 from voice_engine.storage.jobs import Jobs
 from voice_engine.storage.legacy import import_legacy
+from voice_engine.storage.library_tables import Narrations, Playgrounds, Styles, Versions
 from voice_engine.storage.migrations import migrate
 from voice_engine.storage.outputs import Outputs
 from voice_engine.storage.templates import Templates
@@ -36,8 +37,16 @@ class Storage:
         self.voices = Voices(self)
         self.templates = Templates(self)
         self.favorites = Favorites(self)
+        self.playgrounds = Playgrounds(self)
+        self.versions = Versions(self)
+        self.styles = Styles(self)
+        self.narrations = Narrations(self)
         ensure_catalog(self)
         if imported:
+            from voice_engine.storage.schema_v4 import backfill
+
+            with self.transaction() as conn:
+                backfill(conn)
             for name in ("jobs", "voices"):
                 shutil.rmtree(data_dir / name, ignore_errors=True)
 

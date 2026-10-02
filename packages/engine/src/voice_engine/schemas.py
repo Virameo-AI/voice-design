@@ -34,6 +34,7 @@ class DesignSpec(_Spec):
     candidates: int = Field(4, ge=1, le=8)
     seed_start: int = Field(1000, ge=0)
     params: GenParams = GenParams()
+    playground_id: str | None = None
 
 
 class LockSpec(_Spec):
@@ -48,6 +49,7 @@ class LockSpec(_Spec):
 class SpeakSpec(_Spec):
     type: Literal["speak"]
     voice_id: str = Field(pattern=VOICE_ID)
+    version_id: str | None = None
     text: str = Field(min_length=1, max_length=5000)
     language: str = "English"
     seed: int = Field(1, ge=0)
@@ -63,6 +65,7 @@ class DesignRequest(_Spec):
     candidates: int = Field(4, ge=1, le=8)
     seed_start: int = Field(1000, ge=0)
     params: GenParams = GenParams()
+    playground_id: str | None = Field(None, description="Record this run under an existing playground.")
 
     def spec(self) -> DesignSpec:
         return DesignSpec(type="design", **self.model_dump())
@@ -83,10 +86,25 @@ class LockRequest(_Spec):
         return LockSpec(type="lock", **data)
 
 
+class RenderSpec(_Spec):
+    """Speak a long script in short beats, then stitch one WAV."""
+
+    type: Literal["render"]
+    voice_id: str = Field(pattern=VOICE_ID)
+    version_id: str | None = None
+    text: str = Field(min_length=1, max_length=20000)
+    language: str = "English"
+    style: str = Field("narration", pattern=r"^[a-z0-9][a-z0-9-]{0,62}$")
+    seed: int = Field(1, ge=0)
+    params: GenParams = GenParams()
+    narration_id: str | None = None
+
+
 class SpeakRequest(_Spec):
     """Synthesize text with a locked voice."""
 
     voice_id: str = Field(pattern=VOICE_ID)
+    version_id: str | None = Field(None, description="A voice version id such as narrator@2. Default: the current version.")
     text: str = Field(min_length=1, max_length=5000)
     language: str = "English"
     seed: int = Field(1, ge=0)
@@ -96,7 +114,22 @@ class SpeakRequest(_Spec):
         return SpeakSpec(type="speak", **self.model_dump())
 
 
-JobSpec = Annotated[Union[DesignSpec, LockSpec, SpeakSpec], Field(discriminator="type")]
+class RenderRequest(_Spec):
+    """Long script. Same locked voice, one style, one stitched WAV."""
+
+    voice_id: str = Field(pattern=VOICE_ID)
+    version_id: str | None = Field(None, description="A voice version id such as narrator@2. Default: the current version.")
+    text: str = Field(min_length=1, max_length=20000)
+    language: str = "English"
+    style: str = Field("narration", pattern=r"^[a-z0-9][a-z0-9-]{0,62}$", description="A style id from GET /v1/styles.")
+    seed: int = Field(1, ge=0)
+    params: GenParams = GenParams()
+
+    def spec(self) -> RenderSpec:
+        return RenderSpec(type="render", **self.model_dump())
+
+
+JobSpec = Annotated[Union[DesignSpec, LockSpec, SpeakSpec, RenderSpec], Field(discriminator="type")]
 
 
 class Checks(BaseModel):
@@ -119,10 +152,20 @@ class Output(BaseModel):
     checks: Checks
 
 
+class Progress(BaseModel):
+    """Where a running job is. Agents poll this instead of guessing."""
+
+    phase: Literal["queued", "design", "lock", "speak", "render", "stitch", "done"] = "queued"
+    detail: str = "Waiting for the worker."
+    completed: int = 0
+    total: int = 0
+
+
 class Job(BaseModel):
     id: str
-    type: Literal["design", "lock", "speak"]
+    type: Literal["design", "lock", "speak", "render"]
     status: JobStatus
+    progress: Progress = Progress()
     spec: dict
     backend: str | None = None
     created_at: str
@@ -132,6 +175,7 @@ class Job(BaseModel):
     deferred: list[str] = []
     outputs: list[Output] = []
     voice_id: str | None = None
+    version_id: str | None = Field(None, description="The voice version this job used.")
     error: str | None = None
 
 
@@ -196,3 +240,103 @@ class TemplateSample(_Spec):
 
 class FavoriteWrite(_Spec):
     note: str | None = Field(None, max_length=500)
+
+
+class PlaygroundWrite(_Spec):
+    """A saved design workspace. config holds the form the way the dashboard shows it."""
+
+    name: str = Field(min_length=1, max_length=80)
+    notes: str | None = Field(None, max_length=1000)
+    template_id: str | None = None
+    config: dict = Field(default_factory=dict, description="instruct, text, language, candidates, seed_start, params. Unknown keys are kept.")
+
+
+class PlaygroundPatch(_Spec):
+    name: str | None = Field(None, min_length=1, max_length=80)
+    notes: str | None = Field(None, max_length=1000)
+    template_id: str | None = None
+    config: dict | None = None
+
+
+class CopyRequest(_Spec):
+    name: str | None = Field(None, max_length=80)
+
+
+class PlaygroundRun(_Spec):
+    """Queue a design job from this playground. Fields override the saved config for this run only."""
+
+    instruct: str | None = Field(None, min_length=1, max_length=2000)
+    text: str | None = Field(None, min_length=1, max_length=1000)
+    language: str | None = None
+    candidates: int | None = Field(None, ge=1, le=8)
+    seed_start: int | None = Field(None, ge=0)
+    params: GenParams | None = None
+    save: bool = Field(True, description="Also write the overrides back to the playground draft.")
+
+
+class VoicePatch(_Spec):
+    name: str | None = Field(None, min_length=1, max_length=80)
+    notes: str | None = Field(None, max_length=1000)
+    favorite: bool | None = None
+    archived: bool | None = None
+    current_version_id: str | None = None
+
+
+class VoiceCopy(_Spec):
+    voice_id: str = Field(pattern=VOICE_ID)
+    name: str | None = Field(None, max_length=80)
+    version_id: str | None = Field(None, description="Which version becomes version 1 of the copy. Default: current.")
+
+
+class VersionPatch(_Spec):
+    label: str = Field(min_length=1, max_length=80)
+
+
+class StyleWrite(_Spec):
+    id: str = Field(pattern=r"^[a-z0-9][a-z0-9-]{0,62}$")
+    name: str | None = Field(None, max_length=80)
+    copy_of: str | None = Field(None, description="Start from this style's values.")
+    temperature: float | None = Field(None, gt=0, le=2)
+    pause_comma_s: float | None = Field(None, ge=0, le=3)
+    pause_period_s: float | None = Field(None, ge=0, le=3)
+    pause_paragraph_s: float | None = Field(None, ge=0, le=5)
+    loudness_dbfs: float | None = Field(None, ge=-40, le=0)
+    crossfade_s: float | None = Field(None, ge=0, le=0.5)
+    emotion: str | None = None
+
+
+class StylePatch(_Spec):
+    name: str | None = Field(None, max_length=80)
+    temperature: float | None = Field(None, gt=0, le=2)
+    pause_comma_s: float | None = Field(None, ge=0, le=3)
+    pause_period_s: float | None = Field(None, ge=0, le=3)
+    pause_paragraph_s: float | None = Field(None, ge=0, le=5)
+    loudness_dbfs: float | None = Field(None, ge=-40, le=0)
+    crossfade_s: float | None = Field(None, ge=0, le=0.5)
+    emotion: str | None = None
+
+
+class NarrationWrite(_Spec):
+    """A narration draft. Render it when the script is ready."""
+
+    title: str = Field(min_length=1, max_length=120)
+    notes: str | None = Field(None, max_length=1000)
+    voice_id: str = Field(pattern=VOICE_ID)
+    version_id: str | None = Field(None, description="Default: the voice's current version, frozen into the draft.")
+    style_id: str = "narration"
+    script: str = Field(min_length=1, max_length=20000)
+    language: str = "English"
+    params: GenParams = GenParams()
+    seed: int = Field(1, ge=0)
+
+
+class NarrationPatch(_Spec):
+    title: str | None = Field(None, min_length=1, max_length=120)
+    notes: str | None = Field(None, max_length=1000)
+    voice_id: str | None = Field(None, pattern=VOICE_ID)
+    version_id: str | None = None
+    style_id: str | None = None
+    script: str | None = Field(None, min_length=1, max_length=20000)
+    language: str | None = None
+    params: GenParams | None = None
+    seed: int | None = Field(None, ge=0)

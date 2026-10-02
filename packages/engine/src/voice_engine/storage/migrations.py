@@ -23,7 +23,8 @@ CREATE TABLE jobs (
     applied     TEXT NOT NULL,
     deferred    TEXT NOT NULL,
     voice_id    TEXT,
-    error       TEXT
+    error       TEXT,
+    progress    TEXT NOT NULL DEFAULT '{}'
 );
 
 CREATE INDEX jobs_status_created ON jobs (status, created_at);
@@ -129,10 +130,28 @@ def migrate(storage) -> None:
         version = _version(storage)
         if version == 0:
             storage.conn.executescript(V2_SQL)
-            storage.conn.execute("INSERT INTO schema_version (version) VALUES (2)")
+            storage.conn.execute("INSERT INTO schema_version (version) VALUES (3)")
             storage.conn.commit()
+            version = 3
+            # Columns from version 3 are already in V1_SQL; fall through to version 4.
         elif version < 2:
             storage.conn.executescript(UPGRADE_V2)
             storage.conn.execute("UPDATE schema_version SET version = 2")
+            storage.conn.commit()
+            version = 2
+        if version < 3:
+            names = {row[1] for row in storage.conn.execute("PRAGMA table_info(jobs)")}
+            if "progress" not in names:
+                storage.conn.execute("ALTER TABLE jobs ADD COLUMN progress TEXT NOT NULL DEFAULT '{}'")
+            storage.conn.execute("UPDATE schema_version SET version = 3")
+            storage.conn.commit()
+            version = 3
+        if version < 4:
+            from datetime import datetime, timezone
+
+            from voice_engine.storage.schema_v4 import upgrade_v4
+
+            upgrade_v4(storage.conn, datetime.now(timezone.utc).isoformat(timespec="seconds"))
+            storage.conn.execute("UPDATE schema_version SET version = 4")
             storage.conn.commit()
         storage.conn.execute("PRAGMA foreign_keys=ON")
