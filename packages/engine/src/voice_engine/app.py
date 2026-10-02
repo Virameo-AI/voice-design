@@ -19,12 +19,15 @@ from voice_engine.schemas import (
     Job,
     JobSpec,
     LockRequest,
+    RenderRequest,
     SpeakRequest,
     TemplateDuplicate,
     TemplatePatch,
     TemplateSample,
     TemplateWrite,
 )
+from voice_engine.routes_library import TAGS as LIBRARY_TAGS
+from voice_engine.routes_library import register as register_library
 from voice_engine.storage import open_storage
 
 DESCRIPTION = """
@@ -74,6 +77,7 @@ TAGS = [
         "name": "Profile",
         "description": "Locked voices kept on the user's shelf.",
     },
+    *LIBRARY_TAGS,
 ]
 
 EXAMPLES = {
@@ -111,6 +115,18 @@ EXAMPLES = {
             "language": "English",
             "seed": 1,
             "params": {"temperature": 0.8},
+        },
+    },
+    "render": {
+        "summary": "4. Long script in one voice",
+        "description": "Up to about ten minutes. [pause 0.8s] sets the gap after a beat. Download audio.wav.",
+        "value": {
+            "type": "render",
+            "voice_id": "narrator-male-v1",
+            "style": "narration",
+            "text": "The room went quiet.\n\n[pause 0.8s] Then someone at the back started it.",
+            "language": "English",
+            "seed": 1,
         },
     },
 }
@@ -253,8 +269,14 @@ def create_app(settings: Settings, backend: Backend | None = None) -> FastAPI:
         responses=WAV,
     )
     def download_job_file(job_id: str, name: str) -> Response:
+        job = store.get(job_id)
+        if job is None:
+            raise HTTPException(404, f"job {job_id} not found")
         wav = store.wav(job_id, name)
         if wav is None:
+            if job.status in {"queued", "running"}:
+                done = f"{job.progress.completed} of {job.progress.total}" if job.progress.total else job.status
+                raise HTTPException(409, f"job is {job.status} ({done}). {job.progress.detail} Poll the job, then download a file that is listed on it.")
             raise HTTPException(404, "file not found")
         return _attachment(wav, "audio/wav", name)
 
@@ -302,8 +324,8 @@ def create_app(settings: Settings, backend: Backend | None = None) -> FastAPI:
         return accept(body.spec())
 
     @app.get("/v1/voices", tags=["Voices"], summary="List locked voices", dependencies=auth)
-    def list_voices() -> list[dict]:
-        return library.list()
+    def list_voices(include_archived: bool = False) -> list[dict]:
+        return library.list(include_archived)
 
     @app.get("/v1/voices/{voice_id}", tags=["Voices"], summary="Read one locked voice", dependencies=auth)
     def get_voice(voice_id: str) -> dict:
@@ -318,6 +340,8 @@ def create_app(settings: Settings, backend: Backend | None = None) -> FastAPI:
             library.delete(voice_id)
         except LookupError as exc:
             raise HTTPException(404, f"voice {voice_id} not found") from exc
+        except PermissionError as exc:
+            raise HTTPException(409, str(exc)) from exc
 
     @app.get(
         "/v1/voices/{voice_id}/files/{name}",
@@ -342,6 +366,10 @@ def create_app(settings: Settings, backend: Backend | None = None) -> FastAPI:
             raise HTTPException(404, "file not found")
         content, media = found
         return _attachment(content, media, name)
+
+    @app.post("/v1/renders", status_code=202, tags=["Speech"], summary="Render a long script in one voice", dependencies=auth)
+    def create_render(body: RenderRequest) -> Job:
+        return accept(body.spec())
 
     @app.post("/v1/speech", status_code=202, tags=["Speech"], summary="Speak text with a locked voice", dependencies=auth)
     def create_speech(body: SpeakRequest) -> Job:
@@ -468,4 +496,15 @@ def create_app(settings: Settings, backend: Backend | None = None) -> FastAPI:
         except LookupError as exc:
             raise HTTPException(404, f"voice {voice_id} not found") from exc
 
+    register_library(
+        app,
+        storage=storage,
+        library=library,
+        store=store,
+        auth=auth,
+        accept=accept,
+        with_urls=_with_urls,
+        attachment=_attachment,
+        backend=backend,
+    )
     return app

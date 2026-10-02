@@ -75,6 +75,11 @@ JobStore   Library
       jobs
       outputs
       voices
+      voice_versions        v4
+      playgrounds           v4
+      playground_runs       v4
+      styles                v4
+      narrations            v4
       templates
       template_samples
       favorites
@@ -89,7 +94,9 @@ packages/engine/src/voice_engine/
     migrations.py         schema_version scripts, applied in order.
     jobs.py               SQL for the jobs table.
     outputs.py            SQL for audio rows.
-    voices.py             SQL for locked voices.
+    voices.py             SQL for voices (metadata; audio lives in versions).
+    library_tables.py     Playgrounds, Versions, Styles, Narrations.
+    schema_v4.py          v4 DDL, built-in styles, backfill from v3 rows.
     templates.py          SQL for voice recipes and their samples.
     favorites.py          SQL for the profile shelf.
 ```
@@ -195,8 +202,107 @@ One row per locked voice. Replaces the voice folder.
 | `master` | blob | zlib-compressed `master.wav` |
 | `prompt` | blob, nullable | raw `voice_prompt.pt` bytes. Torch backends (CUDA, CPU) only. Null on Mac until a torch run builds it |
 
-Voice ids stay permanent. A new version is a new id. The row may later allow
-updating `name` and `notes` only.
+Voice ids stay permanent. Version 4 moved the audio into `voice_versions`
+and added to this row: `playground_id`, `origin_job_id`, `origin_candidate`,
+`current_version_id`, `favorite`, `archived`, `copied_from`. `master` and
+`prompt` remain for rows written before v4 and are no longer read; the
+current version's blobs are. `PATCH` may change `name`, `notes`,
+`favorite`, `archived`, and `current_version_id` (which must belong to the
+voice).
+
+## Version 4: playgrounds, versions, styles, narrations
+
+Schema version 4 adds the tables behind the dashboard's Playground and
+Studio pages. The DDL and the built-in styles are in
+`storage/schema_v4.py`; `migrations.py` applies it after v3.
+
+```text
+playgrounds ──< playground_runs >── jobs (design)
+voices ──< voice_versions (tree through parent_version_id)
+styles
+narrations ── voices, voice_versions, styles, jobs (render)
+```
+
+### playgrounds and playground_runs
+
+| Column | Notes |
+| --- | --- |
+| `playgrounds.id` | `pg_<timestamp>_<hex>` |
+| `name`, `notes`, `template_id` | the template a playground started from, if any |
+| `config` | JSON draft: instruct, text, language, candidates, seed_start, params |
+| `copied_from` | the playground this was copied from |
+| `playground_runs.id` | `run_<timestamp>_<hex>` |
+| `playground_id` | cascades on playground delete |
+| `run_no` | 1, 2, 3… unique per playground |
+| `job_id` | the design job; cascades on job delete |
+| `config` | the config as submitted, frozen |
+
+Deleting a playground deletes its runs and leaves the voices kept from it;
+their `playground_id` becomes null.
+
+### voice_versions
+
+| Column | Notes |
+| --- | --- |
+| `id` | `<voice_id>@<version_no>` |
+| `voice_id` | cascades on voice delete |
+| `version_no` | 1 is the kept take |
+| `parent_version_id` | null for version 1 |
+| `kind` | `original` for the kept take and for version 1 of a copy |
+| `label` | free text, editable |
+| `sample_rate`, `duration_s` | |
+| `audio` | zlib-compressed WAV |
+| `prompt` | torch prompt bytes, built on first use by a torch backend |
+| `ref_text` | the text that audio speaks (the design sample) |
+| `edits` | JSON, empty for a kept take |
+| `job_id` | the lock job |
+
+### styles
+
+One row per narration preset. `builtin = 1` rows are seeded (narration,
+comedy, commercial, kids) and refuse `PATCH` and `DELETE`. A style in use
+by any narration refuses `DELETE`. Fields: `temperature`, `pause_comma_s`,
+`pause_period_s`, `pause_paragraph_s`, `loudness_dbfs`, `crossfade_s`,
+`emotion`, `copied_from`.
+
+### narrations
+
+| Column | Notes |
+| --- | --- |
+| `id` | `nar_<timestamp>_<hex>` |
+| `title`, `notes` | editable at any time |
+| `voice_id`, `version_id`, `style_id` | `ON DELETE RESTRICT`: a voice or style in use cannot be deleted |
+| `script`, `language`, `params`, `seed` | editable while `status = draft` |
+| `status` | `draft`, `rendering`, `rendered`, `failed` |
+| `job_id` | the render job; `SET NULL` when the job is deleted |
+| `copied_from` | |
+
+Deleting a narration deletes its render job and that job's audio. Deleting
+one that is rendering is refused.
+
+### Migration and backfill
+
+`upgrade_v4` creates the tables, adds the new voice columns and
+`jobs.version_id`, seeds the built-in styles, then backfills:
+
+- each voice gets `<voice_id>@1` from its `master`, `prompt`, and `preview`,
+  and becomes current;
+- each row in `favorites` sets `voices.favorite = 1`;
+- each design job gets a playground `pg_<job_id>` with one run, and the
+  voices locked from that job point at it.
+
+The backfill is idempotent and also runs after the legacy folder import, so
+a database created from `data/jobs` and `data/voices` ends up in the same
+shape as a fresh one.
+
+## Version 5: the sidecar columns go
+
+An engine that shipped with the AuK sidecar wrote `voice_versions.auk`,
+`narrations.perform_tags`, and jobs of type `refine`. `upgrade_v5` drops the
+two columns when they exist and deletes the refine jobs (their outputs
+cascade). Versions those jobs created stay, with their audio, as ordinary
+versions of the voice. A fresh database is created at version 5 and never
+has the columns.
 
 ## Ownership and history
 
@@ -331,6 +437,15 @@ One fixture test builds a tiny `data/jobs` and `data/voices` tree, starts
 the store, and checks the rows match the files and that
 `legacy_import_v1` is `complete`. A second open, after a new folder is
 dropped beside the database, does not import it again.
+
+`test_library_tables.py` covers the v4 classes directly: playground runs
+and copy, the version tree and current-version rule, built-in style
+freezing and in-use deletes, narration edit rules and the rendering guard.
+`test_library_api.py` runs the same rules over HTTP with the fake backend.
+
+```bash
+uv run --project packages/engine --extra dev pytest packages/engine/tests
+```
 
 ## Out of scope
 

@@ -39,6 +39,17 @@ def cmd_serve(args) -> int:
     return 0
 
 
+def cmd_setup(args) -> int:
+    from voice_engine.setup_models import prefetch
+
+    try:
+        prefetch(args.backend)
+    except Exception as exc:
+        print(f"setup failed: {exc}", file=sys.stderr)
+        return 1
+    return 0
+
+
 def cmd_doctor(_args) -> int:
     from voice_engine.backends import detect
 
@@ -134,6 +145,10 @@ def build_parser() -> argparse.ArgumentParser:
     serve.add_argument("--data-dir")
     serve.add_argument("--preload", action="store_true", help="load models at startup")
     serve.set_defaults(func=cmd_serve)
+
+    setup = sub.add_parser("setup", help="Download the Qwen weights for this machine")
+    setup.add_argument("--backend", choices=["auto", "mlx", "cuda", "cpu"], default="auto")
+    setup.set_defaults(func=cmd_setup)
 
     doctor = sub.add_parser("doctor", help="Show which backend this machine can use")
     doctor.set_defaults(func=cmd_doctor)

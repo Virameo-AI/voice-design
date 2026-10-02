@@ -1,5 +1,12 @@
 // HTTP client for the voice engine. The MCP endpoint never loads a model.
 
+export interface Progress {
+  phase: string;
+  detail: string;
+  completed: number;
+  total: number;
+}
+
 export interface Job {
   id: string;
   type: string;
@@ -7,6 +14,8 @@ export interface Job {
   spec: Record<string, unknown>;
   error: string | null;
   voice_id: string | null;
+  version_id?: string | null;
+  progress?: Progress;
   outputs: Array<{
     file: string;
     url: string | null;
@@ -17,6 +26,17 @@ export interface Job {
 }
 
 const TERMINAL = new Set(["succeeded", "failed", "cancelled"]);
+
+export function nextStep(job: Job): string {
+  const where = job.progress?.total
+    ? `${job.progress.completed} of ${job.progress.total}. ${job.progress.detail}`
+    : (job.progress?.detail ?? "");
+  if (job.status === "queued") return `Queued. ${where} Call get_job again in 15 seconds. cancel_job works only while queued.`;
+  if (job.status === "running") return `Running. ${where} Call get_job again. audio.wav is not ready. A file already listed in outputs can be downloaded.`;
+  if (job.status === "succeeded") return "Succeeded. download_speech or download_voice writes a WAV on disk and returns its path. The audio is not inside the tool result. A 10 minute WAV is about 30 MB.";
+  if (job.status === "failed") return `Failed: ${job.error ?? "unknown"}. If this says interrupted by restart, submit the same request again.`;
+  return "Cancelled. Submit a new job to try again.";
+}
 
 export class VoiceClient {
   constructor(
@@ -85,15 +105,17 @@ export class VoiceClient {
 
   async wait(path: string, timeoutMs: number): Promise<Job> {
     const deadline = Date.now() + timeoutMs;
+    let last: Job | undefined;
     while (Date.now() < deadline) {
-      const job = await this.get<Job>(path);
-      if (TERMINAL.has(job.status)) {
-        if (job.status !== "succeeded") throw new Error(job.error ?? `job ${job.status}`);
-        return job;
+      last = await this.get<Job>(path);
+      if (TERMINAL.has(last.status)) {
+        if (last.status !== "succeeded") throw new Error(`${last.error ?? last.status}. ${nextStep(last)}`);
+        return last;
       }
       await Bun.sleep(1500);
     }
-    throw new Error(`timed out waiting for ${path}`);
+    const waited = Math.round(timeoutMs / 1000);
+    throw new Error(`still ${last?.status ?? "unknown"} after ${waited}s. ${last ? nextStep(last) : path}`);
   }
 
   async download(path: string, dest: string): Promise<void> {

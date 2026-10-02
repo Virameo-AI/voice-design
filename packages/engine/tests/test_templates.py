@@ -130,9 +130,13 @@ def test_version_1_upgrades_and_restores_builtins(tmp_path):
     db.close()
 
     storage = open_storage(tmp_path)
-    assert storage.query("SELECT version FROM schema_version")[0]["version"] == 2
+    assert storage.query("SELECT version FROM schema_version")[0]["version"] == 5
     assert storage.query("SELECT name FROM sqlite_master WHERE name = 'presets'") == []
-    assert storage.voices.get("keep-v1")["name"] == "Keep"
+    kept = storage.voices.get("keep-v1")
+    assert kept["name"] == "Keep"
+    assert kept["current_version_id"] == "keep-v1@1"
+    assert [v["version_no"] for v in storage.versions.list("keep-v1")] == [1]
+    assert {s["id"] for s in storage.styles.list()} >= {"narration", "comedy", "commercial", "kids"}
     assert len(storage.templates.list()) == len(CATALOG)
     assert storage.templates.wav("builtin-animated")[:4] == b"RIFF"
 
@@ -143,14 +147,42 @@ def test_version_1_upgrades_and_restores_builtins(tmp_path):
     assert again.templates.get("builtin-warm-narrator")["has_sample"] is True
 
 
-def test_fresh_database_is_version_2(tmp_path):
+def test_fresh_database_is_current(tmp_path):
     app = create_app(Settings(data_dir=tmp_path, backend="fake"))
     with TestClient(app):
         pass
     db = sqlite3.connect(tmp_path / "studio.db")
     version = db.execute("SELECT version FROM schema_version").fetchone()[0]
     tables = {row[0] for row in db.execute("SELECT name FROM sqlite_master WHERE type = 'table'")}
+    version_columns = {row[1] for row in db.execute("PRAGMA table_info(voice_versions)")}
+    narration_columns = {row[1] for row in db.execute("PRAGMA table_info(narrations)")}
     db.close()
-    assert version == 2
+    assert version == 5
     assert "presets" not in tables
-    assert {"templates", "template_samples", "favorites"} <= tables
+    assert {"templates", "template_samples", "favorites", "playgrounds", "playground_runs", "voice_versions", "styles", "narrations"} <= tables
+    assert "auk" not in version_columns and "perform_tags" not in narration_columns
+
+
+def test_version_4_database_drops_the_sidecar_columns(tmp_path):
+    """A studio.db written while the AuK sidecar existed loses its columns and refine jobs."""
+    app = create_app(Settings(data_dir=tmp_path, backend="fake"))
+    with TestClient(app):
+        pass
+    db = sqlite3.connect(tmp_path / "studio.db")
+    db.execute("ALTER TABLE voice_versions ADD COLUMN auk TEXT NOT NULL DEFAULT '{}'")
+    db.execute("ALTER TABLE narrations ADD COLUMN perform_tags INTEGER NOT NULL DEFAULT 1")
+    db.execute(
+        "INSERT INTO jobs (id, type, status, spec, created_at, applied, deferred) VALUES ('job_refine', 'refine', 'succeeded', '{}', '2026-01-01T00:00:00+00:00', '[]', '[]')"
+    )
+    db.execute(
+        "INSERT INTO jobs (id, type, status, spec, created_at, applied, deferred) VALUES ('job_speak', 'speak', 'succeeded', '{}', '2026-01-01T00:00:00+00:00', '[]', '[]')"
+    )
+    db.execute("UPDATE schema_version SET version = 4")
+    db.commit()
+    db.close()
+
+    storage = open_storage(tmp_path)
+    assert storage.query("SELECT version FROM schema_version")[0]["version"] == 5
+    assert "auk" not in {row["name"] for row in storage.query("PRAGMA table_info(voice_versions)")}
+    assert "perform_tags" not in {row["name"] for row in storage.query("PRAGMA table_info(narrations)")}
+    assert [job.id for job in storage.jobs.list(limit=10)] == ["job_speak"]

@@ -6,7 +6,7 @@ import { VoiceClient } from "./client.ts";
 import { registerTools } from "./tools.ts";
 
 const INSTRUCTIONS =
-  "Design a voice, preview the saved WAVs, lock one candidate, then speak. design_voice and preview_voice write candidate files under the output directory and return absolute paths. speak writes the finished WAV and returns its path for the next content step. Templates store voice recipes. The profile stores voices kept for reuse.";
+  "Flow: create_playground (or design_voice) → run_playground → get_job until succeeded → lock_voice → create_narration → render_saved_narration → get_job → download_narration. Long jobs return immediately with a job id; poll get_job about every 15 seconds and read next for what to do. Tool results carry file paths, never audio bytes. A locked voice is version 1 (narrator@1); narrations freeze the version they used. list_downloads shows every WAV that can be written to disk.";
 
 export function lanAddress(): string {
   for (const entries of Object.values(networkInterfaces())) {

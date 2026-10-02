@@ -47,7 +47,8 @@ weights.
 ## Folder structure
 
 ```text
-audio/
+voice-design/
+  setup.ts                 installs the right extra and downloads weights
   start.ts                 starts engine, then studio
   voice-generator.toml
   common/openapi.json
@@ -57,10 +58,19 @@ audio/
     examples/              design.json, lock.json, speak.json
     scripts/smoke.py       design -> lock -> speak over HTTP
     scripts/export_openapi.py
-    src/voice_engine/      cli, app, jobs, library, backends
-    tests/test_api.py
+    src/voice_engine/
+      cli.py app.py        serve, doctor, setup, submit; FastAPI app and job routes
+      routes_library.py    playgrounds, versions, styles, narrations, downloads
+      jobs.py              JobStore: queue, worker, design/lock/speak/render
+      library.py           Library: voices and versions, prompt staging
+      schemas.py           pydantic specs and request bodies
+      pipeline/            script parsing, beats, styles, stitching
+      backends/            mlx, cuda, cpu, fake
+      storage/             SQLite layer, see database.md
+    tests/                 test_api, test_library_tables, test_library_api, test_templates
   packages/studio/         the public UI and proxy
-  data/                    jobs/<job_id>/ and voices/<voice_id>/, not committed
+  packages/mcp/            tools served at /mcp by the studio
+  data/studio.db           every job, voice, and WAV; not committed
 ```
 
 ## Configuration
@@ -91,11 +101,61 @@ Client commands read `VOICE_ENGINE_URL` (default `http://127.0.0.1:8100`) and
 | GET    | /v1/jobs/{job_id}                     | job record with outputs and checks       |
 | DELETE | /v1/jobs/{job_id}                     | cancel a queued job                      |
 | GET    | /v1/jobs/{job_id}/files/{name}        | download a WAV                           |
-| GET    | /v1/voices                            | list locked voices                       |
-| GET    | /v1/voices/{voice_id}                 | voice metadata                           |
-| GET    | /v1/voices/{voice_id}/files/{name}    | master.wav, preview.txt, instruct.txt    |
+| POST   | /v1/designs, /v1/speech, /v1/renders  | typed submits, same job record            |
+| GET    | /v1/voices?include_archived=          | list voices with version counts          |
+| POST   | /v1/voices                            | keep a take (lock), returns the job      |
+| GET / PATCH / DELETE | /v1/voices/{voice_id}   | metadata; name, notes, favorite, archived, current_version_id; delete refused (409) while narrations use it |
+| POST   | /v1/voices/{voice_id}/copy            | a new voice whose version 1 is any version |
+| GET    | /v1/voices/{voice_id}/files/{name}    | master.wav of the current version, preview.txt, instruct.txt |
+| GET    | /v1/voices/{voice_id}/versions    | the version list                             |
+| GET / PATCH | /v1/voices/{voice_id}/versions/{version_id} | one version; label              |
+| GET    | /v1/voices/{voice_id}/versions/{version_id}/master.wav | that version's audio    |
+| GET / POST | /v1/playgrounds                   | saved design workspaces                  |
+| GET / PATCH / DELETE | /v1/playgrounds/{id}    | draft config, runs, voices kept from them |
+| POST   | /v1/playgrounds/{id}/copy             | copy the draft                           |
+| POST   | /v1/playgrounds/{id}/runs             | queue a design job from the draft; `overrides`, `save` |
+| GET / POST | /v1/styles                        | narration presets                        |
+| GET / PATCH / DELETE | /v1/styles/{id}         | built-ins frozen (409); in use blocks delete (409) |
+| GET / POST | /v1/narrations                    | drafts and rendered narrations           |
+| GET / PATCH / DELETE | /v1/narrations/{id}     | GET includes `job` and `audio_url`; delete removes the render job |
+| POST   | /v1/narrations/{id}/render            | queue the render, freeze the draft; 409 while rendering |
+| POST   | /v1/narrations/{id}/copy              | a new draft from this one                |
+| GET    | /v1/narrations/{id}/audio.wav         | the stitched WAV; 409 until rendered     |
+| GET    | /v1/downloads                         | every WAV with a url, newest first       |
+| GET / POST / PATCH / DELETE | /v1/templates…  | voice recipes, see templates.md          |
 
 `/health` is open. Everything under `/v1` needs the bearer token when one is set.
+
+Error mapping is the same across the library routes: a missing row is
+`404`, a rule the row refuses (frozen built-in, voice in use, duplicate id,
+render already running) is `409` with a sentence that names the cause, and
+a bad value is `400`.
+
+## Library objects
+
+```text
+playground  ──runs──▶  design job  ──takes──▶  candidate-NN.wav
+                                         │ keep
+                                         ▼
+                             voice ──▶ voice@1
+                                         │ current_version_id
+                                         ▼
+style  +  script  ──▶  narration (draft) ──render──▶ render job ──▶ audio.wav
+```
+
+- A **playground** holds a design draft (`config`: instruct, sample text,
+  language, takes, Qwen params). Each Generate is a **run** with a `run_no`
+  and the job id. Voices kept from a run remember the playground.
+- A **voice** is the id people use. Its audio is version 1, `voice@1`, the
+  kept take. `current_version_id` decides which master
+  `GET /v1/voices/{id}/files/master.wav` and a speak without `version_id` use.
+- A **style** is a narration preset: temperature, top-p, top-k, repetition
+  penalty, max tokens, pause scale, target loudness, trim, emotion. Four are
+  built in (narration, comedy, commercial, kids) and read-only; `copy_of`
+  creates an editable one.
+- A **narration** is a title, a voice, a version (optional), a style, and a
+  script. A draft is fully editable. Render freezes it; afterwards only
+  `title` and `notes` change. Copy makes a new draft.
 
 ## Swagger, and how a frontend connects
 
@@ -155,6 +215,31 @@ locking to an existing id fails. Make `-v2` instead.
 ```
 
 Writes `audio.wav`. Multi-line text is generated line by line and joined.
+`version_id` picks a version other than the current one.
+
+### render: a long script to one WAV
+
+```json
+{
+  "type": "render",
+  "voice_id": "warm-narrator-v1",
+  "version_id": "warm-narrator-v1@2",
+  "style": "comedy",
+  "text": "Okay, so this is the part nobody tells you. [pause 0.6s] Welcome back.",
+  "params": { "temperature": 0.95 }
+}
+```
+
+The script is split into beats on blank lines and sentence ends.
+Each beat is spoken with the voice. `[pause 1.2s]` sets the gap after a beat.
+Any other bracket tag is rejected. Beats are loudness-matched to the
+style target, trimmed, and stitched into `audio.wav`. `progress` counts
+beats, so a client can show "beat 7 of 23" while it runs. Scripts over about
+ten minutes are refused.
+
+`POST /v1/narrations/{id}/render` builds this spec from a saved narration
+and links the job to it; the narration's `status` follows the job
+(`rendering`, `rendered`, `failed`).
 
 ### Generation params
 
@@ -201,6 +286,12 @@ backend that ran it, so a script can see if a setting was ignored.
 ```
 
 Statuses: `queued`, `running`, `succeeded`, `failed`, `cancelled`.
+
+While a job runs, `progress` carries `phase` (`queued`, `design`, `lock`,
+`speak`, `render`, `stitch`, `done`), a `detail` sentence, and
+`completed` / `total` when the phase has countable steps. Speak and render
+jobs also carry `version_id`. Downloading an output before it exists
+returns `409` with the current detail.
 
 ## Validation
 
@@ -249,16 +340,20 @@ endpoint is `http://<server>:8180/mcp` with that same header.
 
 ## Install
 
+`bun setup.ts` at the repository root runs the right pair of commands for
+the machine. By hand:
+
 ```bash
 uv sync --python 3.12 --project packages/engine --extra mac --extra dev    # Apple Silicon
 uv sync --python 3.12 --project packages/engine --extra cuda --extra dev   # NVIDIA
 uv sync --python 3.12 --project packages/engine --extra cpu --extra dev    # no GPU
+uv run --project packages/engine voice-engine setup --backend mlx          # downloads the Qwen repos
 uv run --project packages/engine voice-engine doctor
-uv run --project packages/engine pytest
+uv run --project packages/engine --extra dev pytest packages/engine/tests
 ```
 
 ## Later
 
-- Studio: `packages/studio`, served by `bun start.ts` (see frontend.md and the repository README).
-- MCP server: a thin wrapper whose tools map to these endpoints.
-- ASR check, loudness normalization, long-script chunking, emotion engines.
+- ASR check on each beat, comparing the transcript to the script.
+- Streaming the render as beats finish instead of one WAV at the end.
+- A second worker when two GPUs are present.

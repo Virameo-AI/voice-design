@@ -23,7 +23,8 @@ CREATE TABLE jobs (
     applied     TEXT NOT NULL,
     deferred    TEXT NOT NULL,
     voice_id    TEXT,
-    error       TEXT
+    error       TEXT,
+    progress    TEXT NOT NULL DEFAULT '{}'
 );
 
 CREATE INDEX jobs_status_created ON jobs (status, created_at);
@@ -113,6 +114,21 @@ CREATE TABLE presets (
 
 UPGRADE_V2 = "DROP TABLE IF EXISTS presets;\n" + TEMPLATES_SQL
 
+# Version 5: the AuK sidecar is gone. Databases written by an engine that had it
+# carry a column on two tables and a job type that no longer exist.
+V5_DROPPED_COLUMNS = (("voice_versions", "auk"), ("narrations", "perform_tags"))
+
+
+def _columns(conn, table: str) -> set[str]:
+    return {row[1] for row in conn.execute(f"PRAGMA table_info({table})")}
+
+
+def upgrade_v5(conn) -> None:
+    for table, column in V5_DROPPED_COLUMNS:
+        if column in _columns(conn, table):
+            conn.execute(f"ALTER TABLE {table} DROP COLUMN {column}")
+    conn.execute("DELETE FROM jobs WHERE type = 'refine'")
+
 
 def _version(storage) -> int:
     exists = storage.conn.execute(
@@ -129,10 +145,33 @@ def migrate(storage) -> None:
         version = _version(storage)
         if version == 0:
             storage.conn.executescript(V2_SQL)
-            storage.conn.execute("INSERT INTO schema_version (version) VALUES (2)")
+            storage.conn.execute("INSERT INTO schema_version (version) VALUES (3)")
             storage.conn.commit()
+            version = 3
+            # Columns from version 3 are already in V1_SQL; fall through to version 4.
         elif version < 2:
             storage.conn.executescript(UPGRADE_V2)
             storage.conn.execute("UPDATE schema_version SET version = 2")
+            storage.conn.commit()
+            version = 2
+        if version < 3:
+            names = {row[1] for row in storage.conn.execute("PRAGMA table_info(jobs)")}
+            if "progress" not in names:
+                storage.conn.execute("ALTER TABLE jobs ADD COLUMN progress TEXT NOT NULL DEFAULT '{}'")
+            storage.conn.execute("UPDATE schema_version SET version = 3")
+            storage.conn.commit()
+            version = 3
+        if version < 4:
+            from datetime import datetime, timezone
+
+            from voice_engine.storage.schema_v4 import upgrade_v4
+
+            upgrade_v4(storage.conn, datetime.now(timezone.utc).isoformat(timespec="seconds"))
+            storage.conn.execute("UPDATE schema_version SET version = 4")
+            storage.conn.commit()
+            version = 4
+        if version < 5:
+            upgrade_v5(storage.conn)
+            storage.conn.execute("UPDATE schema_version SET version = 5")
             storage.conn.commit()
         storage.conn.execute("PRAGMA foreign_keys=ON")

@@ -21,3 +21,23 @@ test("the agent tools cover design, preview, lock, speech, templates, and profil
   expect(TOOL_NAMES).toContain("save_profile_voice");
   expect(new Set(TOOL_NAMES).size).toBe(TOOL_NAMES.length);
 });
+
+test("the library tools cover playgrounds, versions, styles, narrations, and downloads", () => {
+  for (const name of [
+    "create_playground",
+    "run_playground",
+    "copy_playground",
+    "update_voice",
+    "copy_voice",
+    "list_voice_versions",
+    "save_style",
+    "create_narration",
+    "update_narration",
+    "render_saved_narration",
+    "copy_narration",
+    "download_narration",
+    "list_downloads",
+  ]) {
+    expect(TOOL_NAMES).toContain(name);
+  }
+});

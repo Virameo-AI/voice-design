@@ -19,7 +19,9 @@ def _job(row, outputs: list[Output]) -> Job:
         deferred=json.loads(row["deferred"]),
         outputs=outputs,
         voice_id=row["voice_id"],
+        version_id=row["version_id"] if "version_id" in row.keys() else None,
         error=row["error"],
+        progress=json.loads(row["progress"]) if row["progress"] else {},
     )
 
 
@@ -61,8 +63,8 @@ class Jobs:
                 """
                 INSERT INTO jobs (
                     id, type, status, spec, backend, created_at, started_at, finished_at,
-                    applied, deferred, voice_id, error
-                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                    applied, deferred, voice_id, error, progress, version_id
+                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
                 ON CONFLICT(id) DO UPDATE SET
                     status = excluded.status,
                     spec = excluded.spec,
@@ -72,7 +74,9 @@ class Jobs:
                     applied = excluded.applied,
                     deferred = excluded.deferred,
                     voice_id = excluded.voice_id,
-                    error = excluded.error
+                    error = excluded.error,
+                    progress = excluded.progress,
+                    version_id = excluded.version_id
                 """,
                 (
                     job.id,
@@ -87,6 +91,8 @@ class Jobs:
                     json.dumps(job.deferred),
                     job.voice_id,
                     job.error,
+                    job.progress.model_dump_json(),
+                    job.version_id,
                 ),
             )
 
