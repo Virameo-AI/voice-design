@@ -5,13 +5,14 @@ from voice_engine.pipeline.styles import get_style
 import numpy as np
 
 
-def test_plan_keeps_tags_on_the_following_line():
-    style = get_style("narration")
-    segments = plan_script("[whispers] Don't look now. [laughs] Then the room broke.", style)
-    assert segments[0].tags == ["whispers"]
-    assert "Don't look" in segments[0].spoken
-    assert "laughs" in segments[1].tags
-    assert "[" not in segments[0].spoken
+def test_plan_rejects_a_performance_tag():
+    for tag in ("whispers", "laughs", "calm", "excited"):
+        try:
+            plan_script(f"[{tag}] Don't look now.", get_style("narration"))
+        except ValueError as exc:
+            assert "unknown tag" in str(exc)
+        else:
+            raise AssertionError(tag)
 
 
 def test_plan_pause_tag_sets_the_gap():

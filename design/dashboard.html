@@ -53,17 +53,17 @@
     background: var(--bg);
     color: var(--ink);
     font-family: "Inter", "Avenir Next", "Segoe UI", system-ui, sans-serif;
-    font-size: 14px;
-    line-height: 1.45;
+    font-size: 16px;
+    line-height: 1.5;
   }
   button, input, textarea, select { font: inherit; color: inherit; }
   button { cursor: pointer; border: 0; background: none; }
   :focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; border-radius: 8px; }
   .sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); }
-  .mono { font-family: ui-monospace, "SF Mono", Menlo, monospace; font-size: 12px; }
+  .mono { font-family: ui-monospace, "SF Mono", Menlo, monospace; font-size: 13px; }
   .muted { color: var(--muted); }
 
-  .app { display: grid; grid-template-columns: 236px minmax(0, 1fr); height: 100%; }
+  .app { display: grid; grid-template-columns: 248px minmax(0, 1fr); height: 100%; }
 
   /* sidebar */
   .side {
@@ -77,10 +77,10 @@
   }
   .brand { display: flex; align-items: center; gap: 10px; padding: 4px 8px 14px; }
   .logo {
-    width: 30px; height: 30px; border-radius: 9px; background: var(--brand);
+    width: 32px; height: 32px; border-radius: 9px; background: var(--brand);
     display: grid; place-items: center; flex: none;
   }
-  .brand strong { font-size: 15px; letter-spacing: -0.01em; }
+  .brand strong { font-size: 17px; letter-spacing: -0.01em; }
   .new-btn {
     display: flex; align-items: center; justify-content: center; gap: 8px;
     margin: 0 4px 12px; padding: 9px 12px; border-radius: 10px;
@@ -96,16 +96,16 @@
   .nav-btn[aria-current="page"] { background: var(--soft); color: var(--ink); }
   .nav-btn[aria-current="page"] svg { color: #7c3aed; }
   .count {
-    margin-left: auto; font-size: 11px; font-weight: 600; padding: 1px 7px;
+    margin-left: auto; font-size: 12px; font-weight: 600; padding: 1px 7px;
     border-radius: 999px; background: var(--soft); color: var(--muted);
   }
   .nav-btn[aria-current="page"] .count { background: var(--panel); }
   .kbd {
-    margin-left: auto; font-size: 11px; color: var(--muted);
+    margin-left: auto; font-size: 12px; color: var(--muted);
     border: 1px solid var(--line); border-radius: 5px; padding: 0 5px;
   }
   .side-foot { margin-top: auto; display: flex; flex-direction: column; gap: 8px; padding: 10px 6px 0; border-top: 1px solid var(--line); }
-  .engine { display: flex; align-items: center; gap: 8px; font-size: 12px; color: var(--muted); }
+  .engine { display: flex; align-items: center; gap: 8px; font-size: 13px; color: var(--muted); }
   .dot { width: 8px; height: 8px; border-radius: 50%; background: #10b981; flex: none; box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.18); }
   .dot.off { background: #f43f5e; box-shadow: 0 0 0 3px rgba(244, 63, 94, 0.18); }
 
@@ -115,12 +115,12 @@
     display: flex; align-items: center; justify-content: space-between; gap: 16px;
     padding: 14px 24px; border-bottom: 1px solid var(--line); background: var(--panel);
   }
-  .top h1 { margin: 0; font-size: 18px; letter-spacing: -0.01em; }
-  .top p { margin: 2px 0 0; color: var(--muted); font-size: 13px; }
+  .top h1 { margin: 0; font-size: 20px; letter-spacing: -0.01em; }
+  .top p { margin: 2px 0 0; color: var(--muted); font-size: 14px; }
   .top-right { display: flex; align-items: center; gap: 8px; }
   .pill {
     display: inline-flex; align-items: center; gap: 7px; padding: 5px 11px;
-    border: 1px solid var(--line); border-radius: 999px; font-size: 12px; background: var(--panel);
+    border: 1px solid var(--line); border-radius: 999px; font-size: 13px; background: var(--panel);
   }
   button.pill:hover { background: var(--soft); }
   .icon-btn {
@@ -135,8 +135,8 @@
   /* shared */
   .card { background: var(--panel); border: 1px solid var(--line); border-radius: var(--radius); padding: 16px; }
   .card-title { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin: 0 0 12px; }
-  .card-title h2 { margin: 0; font-size: 14px; font-weight: 650; }
-  label.field { display: block; font-size: 12px; font-weight: 600; color: var(--muted); margin: 14px 0 6px; }
+  .card-title h2 { margin: 0; font-size: 16px; font-weight: 650; }
+  label.field { display: block; font-size: 13px; font-weight: 600; color: var(--muted); margin: 14px 0 6px; }
   textarea, input[type="text"], input[type="search"], select {
     width: 100%; border: 1px solid var(--line); background: var(--panel);
     border-radius: 10px; padding: 9px 11px; outline: none;
@@ -149,7 +149,7 @@
     border: 1px solid var(--line); background: var(--panel);
   }
   .btn:hover { background: var(--soft); }
-  .btn.sm { padding: 5px 10px; font-size: 13px; border-radius: 8px; }
+  .btn.sm { padding: 5px 10px; font-size: 14px; border-radius: 8px; }
   .btn.dark { background: var(--ink); color: var(--panel); border-color: transparent; }
   .btn.dark:hover { opacity: 0.9; background: var(--ink); }
   .btn.go {
@@ -163,7 +163,7 @@
   .seg button[aria-pressed="true"] { background: var(--panel); color: var(--ink); box-shadow: 0 0 0 1px var(--line); }
   .chip {
     display: inline-flex; align-items: center; gap: 5px; padding: 2px 8px;
-    border-radius: 999px; font-size: 11.5px; font-weight: 600; background: var(--soft); color: var(--muted);
+    border-radius: 999px; font-size: 12.5px; font-weight: 600; background: var(--soft); color: var(--muted);
   }
   .chip.ok { background: var(--ok-bg); color: var(--ok); }
   .chip.warn { background: var(--warn-bg); color: var(--warn); }
@@ -201,34 +201,35 @@
     display: flex; align-items: center; gap: 16px;
   }
   .hero .orb { --s: 52px; }
-  .hero h2 { margin: 0; font-size: 17px; letter-spacing: -0.01em; }
+  .hero h2 { margin: 0; font-size: 19px; letter-spacing: -0.01em; }
   .hero p { margin: 3px 0 0; color: var(--muted); }
-  .steps { margin-left: auto; display: flex; gap: 6px; align-items: center; color: var(--muted); font-size: 12px; font-weight: 600; }
+  .steps { margin-left: auto; display: flex; gap: 6px; align-items: center; color: var(--muted); font-size: 13px; font-weight: 600; }
   .steps span { padding: 4px 10px; border-radius: 999px; background: var(--panel); border: 1px solid var(--line); }
   .steps span.on { color: var(--ink); border-color: #c4b5fd; }
-  .play-grid { display: grid; grid-template-columns: 380px minmax(0, 1fr); gap: 18px; align-items: start; }
-  .presets { display: flex; flex-wrap: wrap; gap: 6px; }
+  .play-grid { display: grid; grid-template-columns: 420px minmax(0, 1fr); gap: 18px; align-items: start; }
+  .presets { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 6px; }
   .preset {
-    padding: 6px 11px; border-radius: 999px; border: 1px solid var(--line); background: var(--panel);
-    font-weight: 600; font-size: 12.5px; display: inline-flex; gap: 7px; align-items: center;
+    padding: 7px 10px; border-radius: 10px; border: 1px solid var(--line); background: var(--panel);
+    font-weight: 600; font-size: 13.5px; display: flex; gap: 8px; align-items: center; min-width: 0; text-align: left;
   }
+  .preset .name { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
   .preset .orb { --s: 14px; }
   .preset:hover { background: var(--soft); }
   .preset[aria-pressed="true"] { border-color: #a78bfa; background: var(--tag-bg); color: var(--tag); }
   details.adv { margin-top: 14px; border-top: 1px dashed var(--line); padding-top: 10px; }
-  details.adv summary { cursor: pointer; font-weight: 600; color: var(--muted); font-size: 13px; }
+  details.adv summary { cursor: pointer; font-weight: 600; color: var(--muted); font-size: 14px; }
   input[type="range"] { width: 100%; accent-color: #7c3aed; }
-  .range-ends { display: flex; justify-content: space-between; font-size: 11.5px; color: var(--muted); }
+  .range-ends { display: flex; justify-content: space-between; font-size: 12.5px; color: var(--muted); }
   .form-foot { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-top: 16px; }
 
-  .takes { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 12px; }
+  .takes { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 12px; }
   .take {
     background: var(--panel); border: 1px solid var(--line); border-radius: var(--radius);
     padding: 14px; display: flex; flex-direction: column; gap: 10px;
   }
   .take.playing { border-color: #a78bfa; box-shadow: 0 0 0 3px rgba(124, 58, 237, 0.12); }
   .take-head { display: flex; align-items: center; gap: 10px; }
-  .take-head strong { display: block; font-size: 14px; }
+  .take-head strong { display: block; font-size: 16px; }
   .take .checks { display: flex; flex-wrap: wrap; gap: 5px; }
   .take .foot { display: flex; gap: 8px; }
   .take .foot .btn { flex: 1; }
@@ -247,20 +248,20 @@
   /* voices */
   .toolbar { display: flex; gap: 10px; align-items: center; margin-bottom: 16px; }
   .toolbar input { max-width: 320px; }
-  .voices { display: grid; grid-template-columns: repeat(auto-fill, minmax(290px, 1fr)); gap: 14px; }
+  .voices { display: grid; grid-template-columns: repeat(auto-fill, minmax(310px, 1fr)); gap: 14px; }
   .voice-card { display: flex; flex-direction: column; gap: 12px; }
   .voice-card .orb { --s: 54px; }
-  .voice-card h3 { margin: 0; font-size: 15px; }
-  .voice-card p { margin: 0; color: var(--muted); font-size: 13px; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+  .voice-card h3 { margin: 0; font-size: 17px; }
+  .voice-card p { margin: 0; color: var(--muted); font-size: 14px; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
   .quick { display: flex; flex-wrap: wrap; gap: 6px; }
   .quick button {
-    padding: 5px 10px; border-radius: 999px; font-size: 12px; font-weight: 600;
+    padding: 5px 10px; border-radius: 999px; font-size: 13px; font-weight: 600;
     background: var(--soft); color: var(--ink);
   }
   .quick button:hover { background: var(--tag-bg); color: var(--tag); }
 
   /* studio */
-  .studio { display: grid; grid-template-columns: minmax(0, 1fr) 360px; gap: 18px; align-items: start; }
+  .studio { display: grid; grid-template-columns: minmax(0, 1fr) 380px; gap: 18px; align-items: start; }
   .voice-strip { display: flex; gap: 8px; overflow-x: auto; padding-bottom: 4px; }
   .vchip {
     display: inline-flex; align-items: center; gap: 8px; padding: 6px 12px 6px 6px; flex: none;
@@ -269,21 +270,21 @@
   .vchip .orb { --s: 26px; }
   .vchip:hover { background: var(--soft); }
   .vchip[aria-pressed="true"] { border-color: #a78bfa; box-shadow: 0 0 0 3px rgba(124, 58, 237, 0.12); }
-  .style-note { color: var(--muted); font-size: 12.5px; margin-top: 6px; }
-  .script { min-height: 300px; font-size: 15px; line-height: 1.6; }
+  .style-note { color: var(--muted); font-size: 13.5px; margin-top: 6px; }
+  .script { min-height: 300px; font-size: 17px; line-height: 1.6; }
   .tagbar { display: flex; flex-wrap: wrap; gap: 6px; margin: 10px 0; }
   .tagbar button {
-    padding: 4px 9px; border-radius: 8px; font-size: 12px; font-weight: 600;
+    padding: 4px 9px; border-radius: 8px; font-size: 13px; font-weight: 600;
     background: var(--tag-bg); color: var(--tag);
   }
   .tagbar button:hover { filter: brightness(0.96); }
-  .stats { display: flex; flex-wrap: wrap; gap: 14px; color: var(--muted); font-size: 12.5px; margin-top: 10px; }
+  .stats { display: flex; flex-wrap: wrap; gap: 14px; color: var(--muted); font-size: 13.5px; margin-top: 10px; }
   .stats b { color: var(--ink); font-weight: 650; }
   .render-card { position: sticky; top: 0; display: flex; flex-direction: column; gap: 12px; }
   .estimate { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
   .estimate div { background: var(--soft); border-radius: 10px; padding: 9px 11px; }
-  .estimate b { display: block; font-size: 17px; letter-spacing: -0.01em; }
-  .estimate span { font-size: 11.5px; color: var(--muted); }
+  .estimate b { display: block; font-size: 19px; letter-spacing: -0.01em; }
+  .estimate span { font-size: 12.5px; color: var(--muted); }
   .switch { display: flex; align-items: flex-start; gap: 10px; cursor: pointer; }
   .switch input { display: none; }
   .track {
@@ -301,12 +302,12 @@
   .beats { display: flex; flex-direction: column; gap: 6px; max-height: 420px; overflow: auto; }
   .beat {
     display: grid; grid-template-columns: 22px minmax(0, 1fr) auto; gap: 8px; align-items: start;
-    padding: 8px 10px; border-radius: 10px; background: var(--soft); font-size: 13px;
+    padding: 8px 10px; border-radius: 10px; background: var(--soft); font-size: 14px;
   }
-  .beat .n { color: var(--muted); font-size: 11.5px; font-weight: 600; padding-top: 1px; }
+  .beat .n { color: var(--muted); font-size: 12.5px; font-weight: 600; padding-top: 1px; }
   .beat .txt { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
   .beat .tags { display: flex; gap: 4px; flex-wrap: wrap; margin-top: 4px; }
-  .beat .st { font-size: 11px; font-weight: 600; color: var(--muted); }
+  .beat .st { font-size: 12px; font-weight: 600; color: var(--muted); }
   .beat.speaking { background: var(--tag-bg); }
   .beat.done .st { color: var(--ok); }
   .beat.bad { background: var(--bad-bg); }
@@ -314,7 +315,7 @@
   /* downloads */
   table { width: 100%; border-collapse: separate; border-spacing: 0; }
   th, td { text-align: left; padding: 11px 14px; border-bottom: 1px solid var(--line); }
-  th { font-size: 12px; color: var(--muted); font-weight: 600; }
+  th { font-size: 13px; color: var(--muted); font-weight: 600; }
   tr:last-child td { border-bottom: 0; }
   tbody tr:hover td { background: var(--soft); }
   .file-cell { display: flex; align-items: center; gap: 10px; }
@@ -326,7 +327,7 @@
   .connect { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
   pre {
     margin: 0; padding: 12px 14px; border-radius: 10px; background: #0f0f17; color: #e9e9f2;
-    font-size: 12px; line-height: 1.55; overflow: auto;
+    font-size: 13px; line-height: 1.55; overflow: auto;
   }
   .snippet { position: relative; margin-top: 10px; }
   .snippet .btn { position: absolute; top: 8px; right: 8px; background: #23232f; color: #fff; border-color: #33334a; }
@@ -345,8 +346,8 @@
   .now { display: flex; align-items: center; gap: 10px; min-width: 0; }
   .now .orb { --s: 36px; }
   .now strong, .now span { display: block; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-  .now span { color: var(--muted); font-size: 12px; }
-  .scrub { display: flex; align-items: center; gap: 10px; font-size: 12px; color: var(--muted); }
+  .now span { color: var(--muted); font-size: 13px; }
+  .scrub { display: flex; align-items: center; gap: 10px; font-size: 13px; color: var(--muted); }
   .scrub .bar { flex: 1; height: 5px; cursor: pointer; }
   .scrub .bar span { transition: none; }
 
@@ -411,7 +412,7 @@
     <div class="side-foot">
       <div class="engine"><span class="dot"></span> Engine on MLX · 24 GB Mac</div>
       <div class="engine"><span class="dot" id="foot-mcp-dot"></span> <span id="foot-mcp">MCP on :8180/mcp</span></div>
-      <div class="muted" style="font-size:11.5px">⌘↵ run · Space play · 1–5 pages</div>
+      <div class="muted" style="font-size:12.5px">⌘↵ run · Space play · 1–5 pages</div>
     </div>
   </aside>
 
@@ -459,7 +460,7 @@
                 <select id="language"><option>English</option><option>Chinese</option><option>Japanese</option><option>Spanish</option></select>
               </div>
               <div>
-                <span class="field" style="display:block;font-size:12px;font-weight:600;color:var(--muted);margin:0 0 6px">Takes</span>
+                <span class="field" style="display:block;font-size:13px;font-weight:600;color:var(--muted);margin:0 0 6px">Takes</span>
                 <div class="seg" id="take-count">
                   <button type="button" data-n="2" aria-pressed="false">2</button>
                   <button type="button" data-n="4" aria-pressed="true">4</button>
@@ -469,7 +470,7 @@
             </div>
             <details class="adv" open>
               <summary>Qwen VoiceDesign settings</summary>
-              <p class="muted" style="font-size:12px;margin:8px 0 0">Same fields as design_voice on MCP and params on POST /v1/designs. Empty means the model default.</p>
+              <p class="muted" style="font-size:13px;margin:8px 0 0">Same fields as design_voice on MCP and params on POST /v1/designs. Empty means the model default.</p>
               <div class="twocol">
                 <div>
                   <label class="field" for="d-temp">Temperature</label>
@@ -498,14 +499,14 @@
               </div>
             </details>
             <div class="form-foot">
-              <span class="muted" style="font-size:12px" id="design-hint">About 20 s per take on this Mac</span>
+              <span class="muted" style="font-size:13px" id="design-hint">About 20 s per take on this Mac</span>
               <button class="btn go" type="submit" id="generate">Generate takes <span class="kbd">⌘↵</span></button>
             </div>
           </form>
           <div>
             <div class="card-title" style="margin-bottom:10px">
               <h2 id="takes-title">Takes</h2>
-              <span class="muted" style="font-size:12px" id="takes-note"></span>
+              <span class="muted" style="font-size:13px" id="takes-note"></span>
             </div>
             <div class="takes" id="takes"></div>
           </div>
@@ -516,7 +517,7 @@
       <section class="page" id="page-voices" aria-label="Voices">
         <div class="toolbar">
           <input type="search" id="voice-search" placeholder="Search saved voices" aria-label="Search saved voices">
-          <span class="muted grow" style="font-size:12.5px">Pick a style on a card to open Studio with that voice ready.</span>
+          <span class="muted grow" style="font-size:13.5px">Pick a style on a card to open Studio with that voice ready.</span>
           <button class="btn dark sm" type="button" data-go="playground" data-focus="instruct">New voice</button>
         </div>
         <div class="voices" id="voice-grid"></div>
@@ -549,7 +550,7 @@
               <div class="range-ends"><span>Steadier</span><span id="steadiness-val">style default</span><span>More expressive</span></div>
               <details class="adv">
                 <summary>Qwen speak settings</summary>
-                <p class="muted" style="font-size:12px;margin:8px 0 0">Same fields as render_narration and POST /v1/renders. Speed here is Qwen.</p>
+                <p class="muted" style="font-size:13px;margin:8px 0 0">Same fields as render_narration and POST /v1/renders. Speed here is Qwen.</p>
                 <div class="twocol">
                   <div><label class="field" for="s-topp">Top-p</label><input type="text" id="s-topp" value="1.0"></div>
                   <div><label class="field" for="s-topk">Top-k</label><input type="text" id="s-topk" value="50"></div>
@@ -563,7 +564,7 @@
               <button class="btn go" type="button" id="render" style="margin-top:12px; width:100%">Render narration <span class="kbd">⌘↵</span></button>
             </div>
             <div class="card">
-              <div class="card-title"><h2>Beats</h2><span class="muted" style="font-size:12px" id="beats-note"></span></div>
+              <div class="card-title"><h2>Beats</h2><span class="muted" style="font-size:13px" id="beats-note"></span></div>
               <div class="beats" id="beats"></div>
             </div>
           </div>
@@ -578,7 +579,7 @@
             <button type="button" data-f="narration" aria-pressed="false">Narrations</button>
             <button type="button" data-f="voice" aria-pressed="false">Voice masters</button>
           </div>
-          <span class="muted grow" style="font-size:12.5px">Files live under data/out on the server. Agents read the same paths.</span>
+          <span class="muted grow" style="font-size:13.5px">Files live under data/out on the server. Agents read the same paths.</span>
         </div>
         <div class="card table-card">
           <table>
@@ -599,7 +600,7 @@
   -H "Authorization: Bearer $VOICE_TOKEN" \
   -H "Content-Type: application/json" \
   -d '{"voice_id":"narrator-warm-v1","style":"narration",
-       "text":"[calm] The room went quiet."}'
+       "text":"The room went quiet. [pause 0.8s] Then the lights came on."}'
 
 curl -H "Authorization: Bearer $VOICE_TOKEN" \
   -o narration.wav \
@@ -637,7 +638,7 @@ curl -H "Authorization: Bearer $VOICE_TOKEN" \
               <tr><td>Description, sample, language, takes, seed</td><td>Playground</td><td>Qwen VoiceDesign</td><td>POST /v1/designs</td><td>design_voice</td></tr>
               <tr><td>Temperature, top-p, top-k, repetition penalty, max tokens</td><td>Playground and Studio</td><td>Qwen</td><td>params</td><td>params</td></tr>
               <tr><td>Speed 0.5–2</td><td>Studio</td><td>Qwen on Mac</td><td>params.speed</td><td>params.speed</td></tr>
-              <tr><td>Style and tags</td><td>Studio</td><td>Qwen speaks the words. Tags are recorded on the beat.</td><td>POST /v1/renders</td><td>render_narration</td></tr>
+              <tr><td>Style and [pause 0.8s]</td><td>Studio</td><td>Qwen speaks the words. A pause tag sets the gap.</td><td>POST /v1/renders</td><td>render_narration</td></tr>
               <tr><td>Keep a take</td><td>Playground</td><td></td><td>POST /v1/voices</td><td>lock_voice</td></tr>
               <tr><td>Download WAV</td><td>Downloads</td><td></td><td>GET /v1/jobs/…/files/audio.wav</td><td>download_speech</td></tr>
             </tbody>
@@ -697,16 +698,14 @@ const PRESETS = [
 ];
 const STYLES = {
   narration: { name: "Narration", note: "Steady pace and longer pauses. Good for explainers and documentaries.", temp: 0.7 },
-  comedy: { name: "Comedy", note: "Quicker, brighter, with an excited lift on every line.", temp: 0.95 },
+  comedy: { name: "Comedy", note: "Quicker and brighter, with a lift on every line.", temp: 0.95 },
   commercial: { name: "Commercial", note: "Tight, even, forward. Short pauses and a louder finish.", temp: 0.65 },
   kids: { name: "Kids", note: "Slower and warmer with a happy lift. The voice itself stays the same person.", temp: 0.85 },
 };
-const TAGS = ["laughs", "whispers", "sighs", "clears throat", "excited", "calm", "sad", "happy", "angry", "slow", "fast"];
-const KNOWN = new Set([...TAGS, "whisper"]);
 const PAGES = {
   playground: ["Playground", "Qwen VoiceDesign. Test a description, then keep a take."],
   voices: ["Voices", "Saved voices. Studio and agents read from here."],
-  studio: ["Studio", "Qwen speaks the script. Tags mark a beat; the words are what get spoken."],
+  studio: ["Studio", "Qwen speaks the script. [pause 0.8s] sets a gap between beats."],
   downloads: ["Downloads", "Finished audio for video edits, uploads, and agents."],
   connect: ["Connect", "Every control on this page is a field on the API and on MCP."],
 };
@@ -860,7 +859,7 @@ function paintPlayer() {
 function renderPresets() {
   $("presets").innerHTML = PRESETS.map((p) => `
     <button type="button" class="preset" data-preset="${p.id}" aria-pressed="${p.id === state.preset}">
-      <span class="orb" style="${orbVars(p.pal)}"></span>${esc(p.name)}
+      <span class="orb" style="${orbVars(p.pal)}"></span><span class="name">${esc(p.name)}</span>
     </button>`).join("");
 }
 function applyPreset(id) {
@@ -891,7 +890,7 @@ function renderTakes() {
     <article class="take">
       <div class="take-head">
         <div class="orb" style="${orbVars(t.pal)}"></div>
-        <div class="grow"><strong>Take ${i + 1}</strong><span class="muted" style="font-size:12px">${t.seconds.toFixed(1)} s · ${esc(t.note)}</span></div>
+        <div class="grow"><strong>Take ${i + 1}</strong><span class="muted" style="font-size:13px">${t.seconds.toFixed(1)} s · ${esc(t.note)}</span></div>
         <button class="play" type="button" data-play-key="take-${t.seed}" data-take="${i}" aria-label="Play take ${i + 1}">${PLAY}</button>
       </div>
       <div style="${orbVars(t.pal)}">${wave(t.seed, true)}</div>
@@ -1013,24 +1012,21 @@ function renderBeats() {
   const beats = parseBeats(text);
   const words = (text.replace(/\[[^\]]*\]/g, " ").match(/\S+/g) || []).length;
   const audio = words / 2.5;
-  const tagged = beats.filter((b) => b.tags.length).length;
-  const unknown = [...new Set(beats.flatMap((b) => b.tags).filter((t) => !KNOWN.has(t)))];
+  const unknown = [...new Set(beats.flatMap((b) => b.tags))];
   const render = audio * 3;
   $("est-audio").textContent = fmt(audio);
   $("est-time").textContent = render < 60 ? `${Math.max(1, Math.round(render))} s` : `${Math.round(render / 60)} min`;
-  $("stats").innerHTML = `<span><b>${words}</b> words</span><span><b>${beats.length}</b> beats</span><span><b>${tagged}</b> tagged</span>
-    <span>Tags recorded, words spoken</span>
-    ${unknown.length ? `<span class="chip bad">Unknown tag: ${unknown.map(esc).join(", ")}</span>` : ""}
+  $("stats").innerHTML = `<span><b>${words}</b> words</span><span><b>${beats.length}</b> beats</span>
+    ${unknown.length ? `<span class="chip bad">Unknown tag: ${unknown.map(esc).join(", ")}. The only tag is [pause 0.8s].</span>` : ""}
     ${words > 1500 ? `<span class="chip warn">Over ten minutes. Split into two renders.</span>` : ""}`;
   $("beats-note").textContent = beats.length ? `${beats.length} beats, each cloned from the saved voice` : "";
   $("beats").innerHTML = beats.map((b, i) => {
     const st = state.progress[i] || "";
-    const bad = b.tags.some((t) => !KNOWN.has(t));
-    return `<div class="beat ${st === "speaking" ? "speaking" : ""} ${st === "done" ? "done" : ""} ${bad ? "bad" : ""}">
+    return `<div class="beat ${st === "speaking" ? "speaking" : ""} ${st === "done" ? "done" : ""} ${b.tags.length ? "bad" : ""}">
       <span class="n">${i + 1}</span>
       <div style="min-width:0">
-        <div class="txt">${b.text ? esc(b.text) : `<span class="muted">sound only</span>`}</div>
-        ${b.tags.length || b.pause ? `<div class="tags">${b.tags.map((t) => `<span class="chip ${KNOWN.has(t) ? "tag" : "bad"}">${esc(t)}</span>`).join("")}${b.pause ? `<span class="chip">pause ${b.pause}s</span>` : ""}</div>` : ""}
+        <div class="txt">${b.text ? esc(b.text) : `<span class="muted">pause</span>`}</div>
+        ${b.tags.length || b.pause ? `<div class="tags">${b.tags.map((t) => `<span class="chip bad">${esc(t)}</span>`).join("")}${b.pause ? `<span class="chip">pause ${b.pause}s</span>` : ""}</div>` : ""}
       </div>
       <span class="st">${{ speaking: "Speaking", done: "Done" }[st] || ""}</span>
     </div>`;
@@ -1226,13 +1222,14 @@ document.addEventListener("keydown", (e) => {
 });
 
 /* boot */
-$("tagbar").innerHTML = [...TAGS.slice(0, 9), "pause"].map((t) => `<button type="button" data-tag="${t}">${t === "pause" ? "[pause 0.8s]" : `[${t}]`}</button>`).join("");
-$("script").value = `[calm] The room went quiet. Nobody wanted to be the first to speak.
+$("tagbar").innerHTML = `<button type="button" data-tag="pause">[pause 0.8s]</button>`;
+$("script").value = `The room went quiet. Nobody wanted to be the first to speak.
 
-[laughs] Then someone at the back started it, and the whole row followed.
-[whispers] Don't look now. He's still watching.
+Then someone at the back started it, and the whole row followed.
 [pause 0.8s]
-[excited] And that was the moment the experiment finally worked.`;
+Don't look now. He's still watching.
+
+And that was the moment the experiment finally worked.`;
 applyPreset("narrator");
 renderTakes();
 renderVoices();

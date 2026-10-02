@@ -102,7 +102,7 @@ def test_styles(plain):
 def test_narration_draft_render_copy_download(plain):
     keep_voice(plain)
     plain.post("/v1/styles", json={"id": "my-narration", "copy_of": "narration", "temperature": 0.6})
-    draft = plain.post("/v1/narrations", json={"title": "Intro", "voice_id": "narrator", "style_id": "my-narration", "script": "[calm] Hello. [laughs] Bye.", "params": {"top_p": 0.9}})
+    draft = plain.post("/v1/narrations", json={"title": "Intro", "voice_id": "narrator", "style_id": "my-narration", "script": "Hello. [pause 0.8s] Bye.", "params": {"top_p": 0.9}})
     assert draft.status_code == 201, draft.text
     draft = draft.json()
     assert draft["status"] == "draft" and draft["version_id"] == "narrator@1"
@@ -143,8 +143,10 @@ def test_narration_draft_render_copy_download(plain):
     assert plain.delete("/v1/voices/narrator").status_code == 204
 
 
-def test_legacy_render_records_tags_and_speaks_the_words(plain):
+def test_legacy_render_speaks_the_words_and_rejects_a_tag(plain):
     keep_voice(plain)
-    job = wait(plain, plain.post("/v1/renders", json={"voice_id": "narrator", "text": "[laughs] Hi there.", "style": "comedy"}).json()["id"])
-    assert job["status"] == "succeeded" and "tag:laughs" in job["deferred"]
+    job = wait(plain, plain.post("/v1/renders", json={"voice_id": "narrator", "text": "Hi there.", "style": "comedy"}).json()["id"])
+    assert job["status"] == "succeeded" and not any(item.startswith("tag:") for item in job["deferred"])
+    tagged = wait(plain, plain.post("/v1/renders", json={"voice_id": "narrator", "text": "[laughs] Hi there.", "style": "comedy"}).json()["id"])
+    assert tagged["status"] == "failed" and "unknown tag" in tagged["error"]
     assert plain.post("/v1/renders", json={"voice_id": "narrator", "text": "Hi", "style": "nope"}).status_code == 400

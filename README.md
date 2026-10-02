@@ -6,7 +6,7 @@
 
 <p align="center">
   <strong>Design a speaking voice from a description, keep it, and narrate with it.</strong><br>
-  Qwen3-TTS designs and speaks. Tags such as <code>[laughs]</code> and <code>[whispers]</code> mark a beat; the words are what get spoken.<br>
+  Qwen3-TTS designs and speaks. <code>[pause 0.8s]</code> sets a gap; the words are what get spoken.<br>
   One dashboard, one HTTP API, and one MCP endpoint share the same library, on this machine or on a GPU server.
 </p>
 
@@ -61,7 +61,7 @@ Dark mode follows the system and can be toggled from the top bar:
 | --- | --- | --- |
 | **Playground** | Describe a speaker, hear 2–8 takes, keep one. Every Generate is a saved run under a playground, so you can come back to it. | Qwen3-TTS VoiceDesign |
 | **Voices** | Kept takes become voices. Version 1 is the kept take. Favorite, archive, rename, copy. | |
-| **Studio** | Write a script with `[laughs]`, `[whispers]`, `[pause 0.8s]`. Pick a voice and a style. Render up to about ten minutes as one stitched WAV. | Qwen3-TTS Base |
+| **Studio** | Write a script. `[pause 0.8s]` sets a gap. Pick a voice and a style. Render up to about ten minutes as one stitched WAV. | Qwen3-TTS Base |
 | **Downloads** | Every WAV: narrations, voice masters, speech. Play, download, copy URL. | |
 | **Connect** | API and MCP status, token entry, and a table of which control maps to which field. | |
 
@@ -173,7 +173,7 @@ layout is in [docs/database.md](docs/database.md).
 ```bash
 curl -s http://127.0.0.1:8180/health
 curl -s -X POST http://127.0.0.1:8180/v1/narrations -H 'content-type: application/json' \
-  -d '{"title":"Intro","voice_id":"warm-narrator-v1","style_id":"narration","script":"[calm] The room went quiet."}'
+  -d '{"title":"Intro","voice_id":"warm-narrator-v1","style_id":"narration","script":"The room went quiet. [pause 0.8s] Then the lights came on."}'
 curl -s -X POST http://127.0.0.1:8180/v1/narrations/NAR_ID/render        # returns the job
 curl -s -o intro.wav http://127.0.0.1:8180/v1/narrations/NAR_ID/audio.wav  # once the job succeeded
 ```

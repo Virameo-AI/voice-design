@@ -263,7 +263,7 @@ export function registerLibraryTools(add: Add, client: VoiceClient, outDir: stri
       voice_id: voiceId,
       version_id: z.string().optional().describe("Default: the voice's current version."),
       style_id: styleId.optional().describe("Default narration."),
-      script: z.string().min(1).max(20000).describe("Up to about ten minutes. [laughs], [whispers], [pause 1s] and similar tags mark a beat."),
+      script: z.string().min(1).max(20000).describe("Up to about ten minutes. [pause 0.8s] sets the gap after a beat."),
       language: z.string().optional(),
       params,
       seed: z.number().int().min(0).optional(),

@@ -6,7 +6,9 @@ The 0.1 tool designed a voice, locked it, and spoke a line. 0.2 adds the
 library around that: playgrounds that remember runs, a kept take as version
 1, saved narration drafts rendered as one WAV, a downloads list, and a
 dashboard built from `design/dashboard.html`. Qwen does the speaking. Tags
-in a script mark a beat; the words are what get spoken.
+in a script sets a gap; the words are what get spoken. The bracket tags
+that used to ask the sidecar for a laugh, a whisper, or an emotion are
+rejected.
 
 ### Engine (`packages/engine`)
 

@@ -8,42 +8,45 @@
 <link rel="stylesheet" href="./src/styles.css">
 </head>
 <body>
-<div class="app">
+<div class="app" id="app">
   <aside class="side">
     <div class="brand">
       <div class="logo" aria-hidden="true">
         <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M1 8.5h2.2l1.5-5 2 9 1.7-6.4L10 8.5H15" stroke="#fff" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
       </div>
-      <strong>Voice Design</strong>
+      <strong class="label">Voice Design</strong>
+      <button class="icon-btn side-toggle" type="button" id="side-toggle" aria-label="Collapse the sidebar" aria-expanded="true" title="Collapse the sidebar">
+        <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M8.5 3 4.5 7l4 4" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </button>
     </div>
-    <button class="new-btn" type="button" data-go="playground" data-focus="instruct">
+    <button class="new-btn" type="button" data-go="playground" data-focus="instruct" title="New voice">
       <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M7 2v10M2 7h10" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
-      New voice
+      <span class="label">New voice</span>
     </button>
-    <button class="nav-btn" type="button" data-go="playground">
+    <button class="nav-btn" type="button" data-go="playground" title="Playground">
       <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M3 10V6M6 13V3M9 11V5M12 9V7" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
-      Playground
+      <span class="label">Playground</span>
     </button>
-    <button class="nav-btn" type="button" data-go="voices">
+    <button class="nav-btn" type="button" data-go="voices" title="Voices">
       <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><circle cx="8" cy="6" r="3" stroke="currentColor" stroke-width="1.6"/><path d="M2.5 14c.8-2.6 3-4 5.5-4s4.7 1.4 5.5 4" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
-      Voices <span class="count" id="count-voices">0</span>
+      <span class="label">Voices</span> <span class="count" id="count-voices">0</span>
     </button>
-    <button class="nav-btn" type="button" data-go="studio">
+    <button class="nav-btn" type="button" data-go="studio" title="Studio">
       <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><rect x="2.5" y="2.5" width="11" height="11" rx="2.5" stroke="currentColor" stroke-width="1.6"/><path d="M5.5 6h5M5.5 8.5h5M5.5 11h3" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
-      Studio
+      <span class="label">Studio</span>
     </button>
-    <button class="nav-btn" type="button" data-go="downloads">
+    <button class="nav-btn" type="button" data-go="downloads" title="Downloads">
       <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M8 2.5v8m0 0L5 7.5m3 3 3-3M3 13.5h10" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
-      Downloads <span class="count" id="count-downloads">0</span>
+      <span class="label">Downloads</span> <span class="count" id="count-downloads">0</span>
     </button>
-    <button class="nav-btn" type="button" data-go="connect">
+    <button class="nav-btn" type="button" data-go="connect" title="Connect">
       <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M6.5 9.5 9.5 6.5M5 11a2.1 2.1 0 0 1 0-3l1.5-1.5M11 5a2.1 2.1 0 0 1 0 3L9.5 9.5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
-      Connect
+      <span class="label">Connect</span>
     </button>
     <div class="side-foot">
-      <div class="engine"><span class="dot off" id="foot-engine-dot"></span> <span id="foot-engine">Engine…</span></div>
-      <div class="engine"><span class="dot off" id="foot-mcp-dot"></span> <span id="foot-mcp">MCP…</span></div>
-      <div class="muted" style="font-size:11.5px">⌘↵ run · Space play · 1–5 pages</div>
+      <div class="engine"><span class="dot off" id="foot-engine-dot"></span> <span class="label" id="foot-engine">Engine…</span></div>
+      <div class="engine"><span class="dot off" id="foot-mcp-dot"></span> <span class="label" id="foot-mcp">MCP…</span></div>
+      <div class="muted label" style="font-size:12.5px">⌘↵ run · Space play · 1–5 pages</div>
     </div>
   </aside>
 
@@ -79,19 +82,20 @@
         </div>
         <div class="play-grid">
           <form class="card" id="design-form">
-            <div class="card-title"><h2>Start from</h2><select id="playground-pick" class="sm" style="width:auto;max-width:200px;padding:5px 8px;font-size:12.5px" aria-label="Playground"></select></div>
+            <div class="card-title"><h2>Start from</h2><select id="playground-pick" class="sm" style="width:auto;max-width:200px;padding:5px 8px;font-size:13.5px" aria-label="Playground"></select></div>
             <div class="presets" id="presets"></div>
+            <nav class="pager" id="preset-pager" aria-label="Templates"></nav>
             <label class="field" for="instruct">Voice description</label>
-            <textarea id="instruct" rows="4"></textarea>
+            <textarea id="instruct" class="compact" rows="3"></textarea>
             <label class="field" for="sample">Sample line</label>
-            <textarea id="sample" rows="2" style="min-height:60px"></textarea>
+            <textarea id="sample" class="compact" rows="2"></textarea>
             <div class="row" style="margin-top:14px">
               <div class="grow">
                 <label class="field" for="language" style="margin-top:0">Language</label>
                 <select id="language"><option>English</option><option>Chinese</option><option>Japanese</option><option>Korean</option><option>German</option><option>French</option><option>Russian</option><option>Portuguese</option><option>Spanish</option><option>Italian</option></select>
               </div>
               <div>
-                <span class="field" style="display:block;font-size:12px;font-weight:600;color:var(--muted);margin:0 0 6px">Takes</span>
+                <span class="field" style="display:block;font-size:13px;font-weight:600;color:var(--muted);margin:0 0 6px">Takes</span>
                 <div class="seg" id="take-count">
                   <button type="button" data-n="2" aria-pressed="false">2</button>
                   <button type="button" data-n="4" aria-pressed="true">4</button>
@@ -99,9 +103,16 @@
                 </div>
               </div>
             </div>
-            <details class="adv" open>
-              <summary>Qwen VoiceDesign settings</summary>
-              <p class="muted" style="font-size:12px;margin:8px 0 0">Same fields as design_voice on MCP and params on POST /v1/designs. Empty means the model default.</p>
+            <button class="btn sm" type="button" id="open-design-settings" style="margin-top:14px">Qwen VoiceDesign settings</button>
+            <div class="form-foot">
+              <span class="muted" style="font-size:13px" id="design-hint">About 20 s per take on a 24 GB Mac</span>
+              <button class="btn go" type="submit" id="generate">Generate takes <span class="kbd">⌘↵</span></button>
+            </div>
+          </form>
+          <dialog class="settings" id="design-settings">
+            <form method="dialog">
+              <div class="card-title"><h2>Qwen VoiceDesign settings</h2><button class="btn sm" value="close">Done</button></div>
+              <p class="muted" style="font-size:13px;margin:0">Same fields as design_voice on MCP and params on POST /v1/designs. Empty means the model default.</p>
               <div class="twocol">
                 <div><label class="field" for="d-temp">Temperature</label><input type="text" id="d-temp" value="0.9" inputmode="decimal"></div>
                 <div><label class="field" for="d-topp">Top-p</label><input type="text" id="d-topp" value="" placeholder="default" inputmode="decimal"></div>
@@ -110,18 +121,15 @@
                 <div><label class="field" for="d-tokens">Max tokens</label><input type="text" id="d-tokens" value="" placeholder="default" inputmode="numeric"></div>
                 <div><label class="field" for="seed">First seed</label><input type="text" id="seed" value="1000" inputmode="numeric"></div>
               </div>
-            </details>
-            <div class="form-foot">
-              <span class="muted" style="font-size:12px" id="design-hint">About 20 s per take on a 24 GB Mac</span>
-              <button class="btn go" type="submit" id="generate">Generate takes <span class="kbd">⌘↵</span></button>
-            </div>
-          </form>
-          <div>
+            </form>
+          </dialog>
+          <div class="takes-col card">
             <div class="card-title" style="margin-bottom:10px">
               <h2 id="takes-title">Takes</h2>
-              <span class="muted" style="font-size:12px" id="takes-note"></span>
+              <span class="muted" style="font-size:13px" id="takes-note"></span>
             </div>
             <div class="takes" id="takes"></div>
+            <nav class="pager" id="take-pager" aria-label="Takes"></nav>
           </div>
         </div>
       </section>
@@ -130,17 +138,18 @@
       <section class="page" id="page-voices" aria-label="Voices">
         <div class="toolbar">
           <input type="search" id="voice-search" placeholder="Search saved voices" aria-label="Search saved voices">
-          <span class="muted grow" style="font-size:12.5px">Pick a style on a card to open Studio with that voice ready.</span>
+          <span class="muted grow" style="font-size:13.5px">Pick a style on a card to open Studio with that voice ready.</span>
           <button class="btn dark sm" type="button" data-go="playground" data-focus="instruct">New voice</button>
         </div>
         <div class="voices" id="voice-grid"></div>
+        <nav class="pager" id="voice-pager" aria-label="Voices"></nav>
       </section>
 
       <!-- Studio -->
       <section class="page" id="page-studio" aria-label="Studio">
         <div class="studio">
           <div class="card">
-            <div class="card-title"><h2>Voice</h2><div class="row"><select id="version-pick" style="width:auto;padding:5px 8px;font-size:12.5px" aria-label="Version"></select><button class="btn sm" type="button" data-go="voices">All voices</button></div></div>
+            <div class="card-title"><h2>Voice</h2><div class="row"><select id="version-pick" style="width:auto;padding:5px 8px;font-size:13.5px" aria-label="Version"></select><button class="btn sm" type="button" data-go="voices">All voices</button></div></div>
             <div class="voice-strip" id="voice-strip"></div>
             <div class="row" style="margin-top:14px; flex-wrap:wrap">
               <div class="seg" id="style-seg"></div>
@@ -163,25 +172,15 @@
               <label class="field" for="steadiness">Temperature</label>
               <input type="range" id="steadiness" min="0.3" max="1.3" step="0.05" value="0.7">
               <div class="range-ends"><span>Steadier</span><span id="steadiness-val">style default</span><span>More expressive</span></div>
-              <details class="adv">
-                <summary>Qwen speak settings</summary>
-                <p class="muted" style="font-size:12px;margin:8px 0 0">Same fields as render_narration and POST /v1/narrations. Speed here is Qwen.</p>
-                <div class="twocol">
-                  <div><label class="field" for="s-topp">Top-p</label><input type="text" id="s-topp" value="" placeholder="default"></div>
-                  <div><label class="field" for="s-topk">Top-k</label><input type="text" id="s-topk" value="" placeholder="default"></div>
-                  <div><label class="field" for="s-rep">Repetition penalty</label><input type="text" id="s-rep" value="" placeholder="default"></div>
-                  <div><label class="field" for="s-tokens">Max tokens</label><input type="text" id="s-tokens" value="" placeholder="default"></div>
-                  <div><label class="field" for="s-speed">Speed</label><input type="text" id="s-speed" value="" placeholder="1.0"></div>
-                  <div><label class="field" for="s-seed">Seed</label><input type="text" id="s-seed" value="1"></div>
-                </div>
-              </details>
+              <button class="btn sm" type="button" id="open-speak-settings" style="margin-top:12px">Qwen speak settings</button>
               <div class="bar" style="margin-top:14px"><span id="render-bar"></span></div>
-              <div class="muted" style="font-size:12px;margin-top:6px" id="render-detail"></div>
+              <div class="muted" style="font-size:13px;margin-top:6px" id="render-detail"></div>
               <button class="btn go" type="button" id="render" style="margin-top:12px; width:100%">Render narration <span class="kbd">⌘↵</span></button>
             </div>
             <div class="card">
-              <div class="card-title"><h2>Beats</h2><span class="muted" style="font-size:12px" id="beats-note"></span></div>
+              <div class="card-title"><h2>Beats</h2><span class="muted" style="font-size:13px" id="beats-note"></span></div>
               <div class="beats" id="beats"></div>
+              <nav class="pager" id="beat-pager" aria-label="Beats"></nav>
             </div>
           </div>
         </div>
@@ -196,7 +195,7 @@
             <button type="button" data-f="voice" aria-pressed="false">Voice masters</button>
             <button type="button" data-f="speech" aria-pressed="false">Speech</button>
           </div>
-          <span class="muted grow" style="font-size:12.5px">Every WAV the engine holds. Agents download the same URLs through MCP.</span>
+          <span class="muted grow" style="font-size:13.5px">Every WAV the engine holds. Agents download the same URLs through MCP.</span>
           <button class="btn sm" type="button" id="dl-refresh">Refresh</button>
         </div>
         <div class="card table-card">
@@ -205,6 +204,7 @@
             <tbody id="dl-rows"></tbody>
           </table>
         </div>
+        <nav class="pager" id="download-pager" aria-label="Downloads"></nav>
       </section>
 
       <!-- Connect -->
@@ -215,30 +215,30 @@
             <p class="muted" style="margin:0" id="api-text">This dashboard runs on it. Scripts and agents can call it directly when MCP is unavailable.</p>
             <label class="field" for="token">Bearer token</label>
             <div class="row"><input type="text" id="token" class="grow mono" placeholder="Leave empty if the server has no token" autocomplete="off"><button class="btn sm" type="button" id="token-save">Save</button></div>
+            <p class="muted" style="margin:10px 0 0;font-size:13.5px">Interactive docs: <a href="/docs" target="_blank" rel="noreferrer">/docs</a></p>
             <div class="snippet">
               <pre id="api-snippet"></pre>
               <button class="btn sm" type="button" data-copy="api-snippet">Copy</button>
             </div>
-            <p class="muted" style="margin:10px 0 0;font-size:12.5px">Interactive docs: <a href="/docs" target="_blank" rel="noreferrer">/docs</a></p>
           </article>
           <article class="card">
             <div class="card-title"><h2>MCP</h2><span class="chip" id="mcp-chip">Checking</span></div>
             <p class="muted" style="margin:0">Agents making videos or audio use the same saved voices and the same files.</p>
+            <div class="tools" id="tool-chips"></div>
             <div class="snippet">
               <pre id="mcp-snippet"></pre>
               <button class="btn sm" type="button" data-copy="mcp-snippet">Copy</button>
             </div>
-            <div class="tools" id="tool-chips"></div>
           </article>
         </div>
-        <div class="card table-card" style="margin-top:16px">
+        <div class="card table-card connect-table">
           <table>
             <thead><tr><th>Control</th><th>Stage</th><th>Model</th><th>API</th><th>MCP</th></tr></thead>
             <tbody>
               <tr><td>Description, sample, language, takes, seed</td><td>Playground</td><td>Qwen VoiceDesign</td><td>POST /v1/playgrounds/{id}/runs</td><td>run_playground</td></tr>
               <tr><td>Temperature, top-p, top-k, repetition penalty, max tokens</td><td>Playground and Studio</td><td>Qwen</td><td>params</td><td>params</td></tr>
               <tr><td>Speed 0.5–2</td><td>Studio</td><td>Qwen on Mac</td><td>params.speed</td><td>params.speed</td></tr>
-              <tr><td>Style and tags</td><td>Studio</td><td>Qwen speaks the words. Tags are recorded on the beat.</td><td>POST /v1/narrations + /render</td><td>create_narration, render_saved_narration</td></tr>
+              <tr><td>Style and [pause 0.8s]</td><td>Studio</td><td>Qwen speaks the words. A pause tag sets the gap.</td><td>POST /v1/narrations + /render</td><td>create_narration, render_saved_narration</td></tr>
               <tr><td>Keep a take</td><td>Playground</td><td></td><td>POST /v1/voices</td><td>lock_voice</td></tr>
               <tr><td>Download WAV</td><td>Downloads</td><td></td><td>GET /v1/downloads</td><td>list_downloads, download_narration</td></tr>
             </tbody>
@@ -269,6 +269,20 @@
   </div>
 </div>
 <div class="toast" id="toast" role="status"><span id="toast-text"></span><button type="button" id="toast-action" hidden></button></div>
+<dialog class="settings" id="speak-settings">
+  <form method="dialog">
+    <div class="card-title"><h2>Qwen speak settings</h2><button class="btn sm" value="close">Done</button></div>
+    <p class="muted" style="font-size:13px;margin:0">Same fields as render_narration and POST /v1/narrations. Speed here is Qwen.</p>
+    <div class="twocol">
+      <div><label class="field" for="s-topp">Top-p</label><input type="text" id="s-topp" value="" placeholder="default"></div>
+      <div><label class="field" for="s-topk">Top-k</label><input type="text" id="s-topk" value="" placeholder="default"></div>
+      <div><label class="field" for="s-rep">Repetition penalty</label><input type="text" id="s-rep" value="" placeholder="default"></div>
+      <div><label class="field" for="s-tokens">Max tokens</label><input type="text" id="s-tokens" value="" placeholder="default"></div>
+      <div><label class="field" for="s-speed">Speed</label><input type="text" id="s-speed" value="" placeholder="1.0"></div>
+      <div><label class="field" for="s-seed">Seed</label><input type="text" id="s-seed" value="1"></div>
+    </div>
+  </form>
+</dialog>
 <audio id="audio" hidden></audio>
 <script type="module" src="./src/main.ts"></script>
 </body>

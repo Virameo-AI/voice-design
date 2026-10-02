@@ -122,7 +122,7 @@ def test_design_and_speech_sections(client):
             json={
                 "voice_id": "section-v1",
                 "style": "comedy",
-                "text": "[whispers] Don't look now. [laughs] Then the room broke.",
+                "text": "Don't look now. [pause 0.8s] Then the room broke.",
             },
         ).json()["id"],
     )
@@ -130,12 +130,11 @@ def test_design_and_speech_sections(client):
     assert rendered["type"] == "render"
     names = [item["file"] for item in rendered["outputs"]]
     assert "audio.wav" in names and any(name.startswith("segment-") for name in names)
-    assert "tag:whispers" in rendered["deferred"]
+    assert not any(item.startswith("tag:") for item in rendered["deferred"])
     assert rendered["progress"]["phase"] == "done"
     assert rendered["progress"]["completed"] == rendered["progress"]["total"] > 0
     missing = client.get(f"/v1/jobs/{rendered['id']}/files/not-a-real.wav")
     assert missing.status_code == 404
-    assert "tag:laughs" in rendered["deferred"]
     wav = client.get(f"/v1/jobs/{rendered['id']}/files/audio.wav")
     assert wav.status_code == 200 and wav.content[:4] == b"RIFF"
 

@@ -119,12 +119,12 @@ EXAMPLES = {
     },
     "render": {
         "summary": "4. Long script in one voice",
-        "description": "Up to about ten minutes. Tags such as [laughs] and [whispers] are kept on their beat. Download audio.wav.",
+        "description": "Up to about ten minutes. [pause 0.8s] sets the gap after a beat. Download audio.wav.",
         "value": {
             "type": "render",
             "voice_id": "narrator-male-v1",
             "style": "narration",
-            "text": "[calm] The room went quiet.\n\n[laughs] Then someone at the back started it.\n[whispers] Don't look now.",
+            "text": "The room went quiet.\n\n[pause 0.8s] Then someone at the back started it.",
             "language": "English",
             "seed": 1,
         },

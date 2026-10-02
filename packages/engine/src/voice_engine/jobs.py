@@ -241,7 +241,6 @@ class JobStore:
         segments = plan_script(spec.text, style)
         params, job.applied, job.deferred = self.backend.split({**spec.params.given(), "temperature": spec.params.temperature or style.temperature}, "speak")
         job.applied = sorted(set(job.applied) | {"style"})
-        deferred_tags: list[str] = []
         self._report(job, "render", f"0 of {len(segments)} beats.", 0, len(segments))
         parts = []
         rate = 24000
@@ -255,15 +254,12 @@ class JobStore:
                     audio = np.zeros(int(rate * 0.05), dtype="float32")
                     seed = spec.seed
                     checks = analyze(audio, rate, "")
-                deferred_tags.extend(tag for tag in segment.tags if tag != "pause")
                 leveled = match_level(trim_silence(audio, rate), style.loudness_dbfs)
                 name = f"segment-{index:02d}.wav"
                 self.storage.outputs.add(job.id, name, seed, rate, checks, wav_bytes(leveled, rate))
                 job.outputs.append(_output(name, seed, rate, checks))
                 self.storage.jobs.save(job)
                 parts.append((leveled, segment.pause_after_s))
-        if deferred_tags:
-            job.deferred = sorted(set(job.deferred) | {f"tag:{tag}" for tag in deferred_tags})
         self._report(job, "stitch", "Joining the beats.", len(segments), len(segments))
         audio = stitch(parts, rate, style.crossfade_s)
         checks = analyze(audio, rate, spec.text)

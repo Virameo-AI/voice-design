@@ -237,7 +237,7 @@ export function registerTools(server: McpServer, client: VoiceClient, outDir: st
     "speak",
     {
       title: "Speak with a locked voice",
-      description: "Speak a short script with a locked voice and wait up to 10 minutes. Returns a file path, not audio bytes. A script of several minutes, or one with [laughs] and [whispers], should use render_narration instead. That tool returns immediately and you poll get_job. If this call times out, call get_job. Do not send the same text again while this job is queued or running.",
+      description: "Speak a short script with a locked voice and wait up to 10 minutes. Returns a file path, not audio bytes. A script of several minutes should use render_narration instead. That tool returns immediately and you poll get_job. If this call times out, call get_job. Do not send the same text again while this job is queued or running.",
       inputSchema: {
         voice_id: voiceId,
         version_id: z.string().optional().describe("A voice version such as narrator-v1@2. Default: the current version."),
@@ -292,7 +292,7 @@ export function registerTools(server: McpServer, client: VoiceClient, outDir: st
       inputSchema: {
         voice_id: voiceId,
         version_id: z.string().optional().describe("A voice version such as narrator-v1@2. Default: the current version."),
-        text: z.string().describe("Up to about ten minutes. Tags such as [laughs] and [whispers] mark a beat."),
+        text: z.string().describe("Up to about ten minutes. [pause 0.8s] sets the gap after a beat."),
         style: z.string().optional().describe("A style id from list_styles. Default narration."),
         language: z.string().optional(),
         seed: z.number().int().min(0).optional(),

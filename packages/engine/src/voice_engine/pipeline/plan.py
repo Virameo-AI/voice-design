@@ -12,21 +12,6 @@ MAX_SEGMENT_CHARS = CHARS_PER_SECOND * MAX_SEGMENT_SECONDS
 TAG = re.compile(r"\[([a-z][a-z0-9 ]*(?:\s+\d+(?:\.\d+)?s)?)\]", re.IGNORECASE)
 SENTENCE = re.compile(r".+?(?:[.!?](?=\s|$)|$)", re.DOTALL)
 
-PERFORMANCE = {
-    "laughs": "add-laugh",
-    "sighs": "add-sigh",
-    "clears throat": "add-throat",
-    "whispers": "whisper",
-    "whisper": "whisper",
-    "excited": "emotion",
-    "sad": "emotion",
-    "calm": "emotion",
-    "happy": "emotion",
-    "angry": "emotion",
-    "slow": "slower",
-    "fast": "faster",
-}
-
 
 @dataclass
 class Segment:
@@ -56,29 +41,20 @@ def _explicit_pause(tag: str) -> float | None:
 
 
 def plan_script(text: str, style) -> list[Segment]:
-    """Split a script into short beats. A tag covers the text that follows it."""
+    """Split a script into short beats. [pause 0.8s] sets the gap after a beat."""
     if not text.strip():
         raise ValueError("text is empty")
     segments: list[Segment] = []
-    pending: list[str] = []
     block = ""
 
-    def flush(pause: float | None = None) -> None:
+    def flush() -> None:
         nonlocal block
         spoken = TAG.sub("", block).strip()
-        if not spoken and not pending:
-            block = ""
-            return
-        if spoken:
-            tags = list(pending)
-            pending.clear()
-            for piece in _pieces(spoken):
-                segments.append(Segment(piece, tags, pause if pause is not None else _pause_after(piece, style)))
-        elif pending:
-            # A tag with no words still needs a beat so the stitcher can place a laugh.
-            segments.append(Segment("", list(pending), pause if pause is not None else style.pause_period_s))
-            pending.clear()
         block = ""
+        if not spoken:
+            return
+        for piece in _pieces(spoken):
+            segments.append(Segment(piece, pause_after_s=_pause_after(piece, style)))
 
     for part in re.split(r"(\[[^\[\]]+\])", text):
         if not part:
@@ -88,15 +64,12 @@ def plan_script(text: str, style) -> list[Segment]:
             flush()
             tag = match.group(1).strip().lower()
             pause = _explicit_pause(tag)
-            if pause is not None:
-                if segments:
-                    segments[-1].pause_after_s = pause
-                else:
-                    segments.append(Segment("", ["pause"], pause))
-                continue
-            if tag not in PERFORMANCE:
-                raise ValueError(f"unknown tag [{tag}]. Known tags: {sorted(PERFORMANCE)}")
-            pending.append(tag)
+            if pause is None:
+                raise ValueError(f"unknown tag [{tag}]. The only tag is [pause 0.8s], with the gap in seconds.")
+            if segments:
+                segments[-1].pause_after_s = pause
+            else:
+                segments.append(Segment("", ["pause"], pause))
             continue
         block += part
     flush()

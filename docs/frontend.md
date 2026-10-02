@@ -45,12 +45,12 @@ version id. ★ toggles favorite (`PATCH`). The style buttons open Studio with
 the voice and that style selected.
 
 **Studio.** Voice strip, version select, style segment (`GET /v1/styles`),
-title, tag bar, script. Beats are parsed in the page the same way the engine
-splits them, so the count, tagged lines, unknown tags, and the ten-minute
-warning update as you type. Render creates a narration draft
+title, a `[pause 0.8s]` button, and the script. Beats are parsed in the page
+the same way the engine splits them, so the count, an unknown tag, and the
+ten-minute warning update as you type. Render creates a narration draft
 (`POST /v1/narrations`) and renders it (`POST …/render`); progress from the
 job drives the bar and the beat statuses. When it finishes the player plays
-`GET /v1/narrations/{id}/audio.wav` and the deferred tags, if any, are
+`GET /v1/narrations/{id}/audio.wav` and any setting the backend deferred is
 listed under the bar. Temperature defaults to the style; the Qwen speak
 settings are under a disclosure.
 
@@ -62,6 +62,16 @@ token travels), Copy URL.
 status dots. The token field, the curl example, the MCP client config, and
 the table that maps every control to its stage, model, API field, and MCP
 tool.
+
+## One library, two doors
+
+The dashboard and MCP call the same engine, and the engine writes one
+SQLite file, so a voice an agent locks or a narration it renders is the
+same row the dashboard reads. The page polls `GET /health` every 30 s and
+the library (templates, voices, styles, playgrounds, downloads) every 8 s,
+and again when the tab regains focus. Only the lists whose data changed are
+re-rendered, so typing and paging are undisturbed. `data/out` is the
+agent's export copy; the dashboard never reads it.
 
 ## Player
 

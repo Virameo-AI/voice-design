@@ -217,7 +217,7 @@ locking to an existing id fails. Make `-v2` instead.
 Writes `audio.wav`. Multi-line text is generated line by line and joined.
 `version_id` picks a version other than the current one.
 
-### render: a tagged script to one WAV
+### render: a long script to one WAV
 
 ```json
 {
@@ -225,15 +225,14 @@ Writes `audio.wav`. Multi-line text is generated line by line and joined.
   "voice_id": "warm-narrator-v1",
   "version_id": "warm-narrator-v1@2",
   "style": "comedy",
-  "text": "[excited] Okay, so this is the part nobody tells you. [laughs] [pause 0.6s] Welcome back.",
+  "text": "Okay, so this is the part nobody tells you. [pause 0.6s] Welcome back.",
   "params": { "temperature": 0.95 }
 }
 ```
 
-The script is split into beats on tags, blank lines, and sentence ends.
+The script is split into beats on blank lines and sentence ends.
 Each beat is spoken with the voice. `[pause 1.2s]` sets the gap after a beat.
-`[laughs]`, `[whispers]`, `[sighs]` and the rest are stripped from the words
-and recorded on the job as deferred tags. Beats are loudness-matched to the
+Any other bracket tag is rejected. Beats are loudness-matched to the
 style target, trimmed, and stitched into `audio.wav`. `progress` counts
 beats, so a client can show "beat 7 of 23" while it runs. Scripts over about
 ten minutes are refused.
