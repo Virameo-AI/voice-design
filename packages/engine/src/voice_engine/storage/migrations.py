@@ -114,6 +114,21 @@ CREATE TABLE presets (
 
 UPGRADE_V2 = "DROP TABLE IF EXISTS presets;\n" + TEMPLATES_SQL
 
+# Version 5: the AuK sidecar is gone. Databases written by an engine that had it
+# carry a column on two tables and a job type that no longer exist.
+V5_DROPPED_COLUMNS = (("voice_versions", "auk"), ("narrations", "perform_tags"))
+
+
+def _columns(conn, table: str) -> set[str]:
+    return {row[1] for row in conn.execute(f"PRAGMA table_info({table})")}
+
+
+def upgrade_v5(conn) -> None:
+    for table, column in V5_DROPPED_COLUMNS:
+        if column in _columns(conn, table):
+            conn.execute(f"ALTER TABLE {table} DROP COLUMN {column}")
+    conn.execute("DELETE FROM jobs WHERE type = 'refine'")
+
 
 def _version(storage) -> int:
     exists = storage.conn.execute(
@@ -153,5 +168,10 @@ def migrate(storage) -> None:
 
             upgrade_v4(storage.conn, datetime.now(timezone.utc).isoformat(timespec="seconds"))
             storage.conn.execute("UPDATE schema_version SET version = 4")
+            storage.conn.commit()
+            version = 4
+        if version < 5:
+            upgrade_v5(storage.conn)
+            storage.conn.execute("UPDATE schema_version SET version = 5")
             storage.conn.commit()
         storage.conn.execute("PRAGMA foreign_keys=ON")

@@ -24,6 +24,8 @@ in a script mark a beat; the words are what get spoken.
   uses it.
 - New routes in `routes_library.py`: playgrounds, voice patch/copy/versions,
   styles, narrations, `GET /v1/downloads`.
+- Schema version 5: a database written while the AuK sidecar existed loses
+  `voice_versions.auk`, `narrations.perform_tags`, and its `refine` jobs.
 
 ### MCP (`packages/mcp`)
 
@@ -38,6 +40,8 @@ in a script mark a beat; the words are what get spoken.
 - React removed. The dashboard is `index.html`, `src/main.ts`, `src/api.ts`,
   `src/config.ts`, `src/styles.css`.
 - Five pages: Playground, Voices, Studio, Downloads, Connect.
+- `bun run test` checks that every element id the script reads exists in
+  `index.html`, so a removed control fails the check instead of the page.
 
 ### Documentation
 

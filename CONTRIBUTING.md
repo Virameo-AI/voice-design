@@ -26,6 +26,7 @@ Run these before opening a change:
 uv run --project packages/engine --extra dev pytest packages/engine/tests   # fake backend
 bun test packages/mcp/tests
 bun run --cwd packages/studio typecheck
+bun run --cwd packages/studio test   # every id main.ts reads exists in index.html
 ```
 
 When a route or a schema changes, regenerate the contract and commit it:

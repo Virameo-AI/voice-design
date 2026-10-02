@@ -212,8 +212,8 @@ voice).
 
 ## Version 4: playgrounds, versions, styles, narrations
 
-Schema version 4 adds the tables behind the dashboard's Playground, Refine,
-and Studio pages. The DDL and the built-in styles are in
+Schema version 4 adds the tables behind the dashboard's Playground and
+Studio pages. The DDL and the built-in styles are in
 `storage/schema_v4.py`; `migrations.py` applies it after v3.
 
 ```text
@@ -294,6 +294,15 @@ one that is rendering is refused.
 The backfill is idempotent and also runs after the legacy folder import, so
 a database created from `data/jobs` and `data/voices` ends up in the same
 shape as a fresh one.
+
+## Version 5: the sidecar columns go
+
+An engine that shipped with the AuK sidecar wrote `voice_versions.auk`,
+`narrations.perform_tags`, and jobs of type `refine`. `upgrade_v5` drops the
+two columns when they exist and deletes the refine jobs (their outputs
+cascade). Versions those jobs created stay, with their audio, as ordinary
+versions of the voice. A fresh database is created at version 5 and never
+has the columns.
 
 ## Ownership and history
 

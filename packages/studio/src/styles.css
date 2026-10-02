@@ -323,6 +323,7 @@
     font-size: 12px; line-height: 1.55; overflow: auto;
   }
   .snippet { position: relative; margin-top: 10px; }
+  .snippet pre { padding-right: 76px; min-height: 44px; }
   .snippet .btn { position: absolute; top: 8px; right: 8px; background: #23232f; color: #fff; border-color: #33334a; }
   .tools { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 10px; }
   .fallback {

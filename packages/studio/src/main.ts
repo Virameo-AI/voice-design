@@ -879,7 +879,6 @@ $("version-pick").addEventListener("change", () => {
   state.versionId = $<HTMLSelectElement>("version-pick").value || null;
 });
 $("script").addEventListener("input", renderBeats);
-$("perform").addEventListener("change", renderBeats);
 $("render").addEventListener("click", () => void render());
 $("voice-search").addEventListener("input", renderVoices);
 $("dl-refresh").addEventListener("click", () => void loadDownloads());

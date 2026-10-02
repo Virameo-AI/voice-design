@@ -7,7 +7,8 @@
     "dev": "bun --hot server.ts",
     "start": "bun server.ts --production",
     "build": "bun build ./index.html --outdir dist --minify",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "test": "bun test tests"
   },
   "devDependencies": {
     "@types/bun": "latest",
